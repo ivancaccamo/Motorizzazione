@@ -19,6 +19,7 @@ from django.urls import path
 from django.conf.urls import include
 from . import myController
 urlpatterns = [
-path("", myController.index,
+ path("", myController.index2, 
 name="index")
-]
+ ]
+
