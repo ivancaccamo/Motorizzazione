@@ -18,7 +18,6 @@ class Veicolo(models.Model):
 
 class Targa(models.Model):
     numero = models.CharField(max_length=10, primary_key=True)
-    attiva = models.BooleanField(default=True)
     telaio = models.ForeignKey(Veicolo, on_delete=models.CASCADE)
 
     class Meta:
@@ -29,23 +28,23 @@ class Targa(models.Model):
         return self.numero
 
 class Attiva(models.Model):
-    targa = models.ForeignKey('Targa', on_delete=models.CASCADE, to_field='numero')
-    veicolo = models.ForeignKey('Veicolo', on_delete=models.CASCADE, to_field='telaio')
+    targaNumero = models.ForeignKey('Targa', on_delete=models.CASCADE, to_field='numero')
+    veicoloTelaio = models.ForeignKey('Veicolo', on_delete=models.CASCADE, to_field='telaio')
 
     class Meta:
-        unique_together = ('targa', 'veicolo')
+        unique_together = ('targaNumero', 'veicoloTelaio')
         db_table = 'Attiva'  # per mantenere il nome della tabella se necessario
 
     def __str__(self):
         return f'{self.targa.numero} - {self.veicolo.telaio}'
     
 class Restituita(models.Model):
-    targa = models.ForeignKey('Targa', on_delete=models.CASCADE, to_field='numero')
+    targaNumero = models.ForeignKey('Targa', on_delete=models.CASCADE, to_field='numero')
     data_restituzione = models.DateField()
-    veicolo = models.ForeignKey('Veicolo', on_delete=models.CASCADE, to_field='telaio')
+    veicoloTelaio = models.ForeignKey('Veicolo', on_delete=models.CASCADE, to_field='telaio')
 
     class Meta:
-        unique_together = ('targa', 'veicolo')
+        unique_together = ('targaNumero', 'veicoloTelaio')
         db_table = 'Restituita'
 
     def __str__(self):
