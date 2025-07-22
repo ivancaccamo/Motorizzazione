@@ -14,7 +14,19 @@ class Veicolo(models.Model):
 
     def __str__(self):
         return f"{self.marca} {self.modello} ({self.telaio})"
+    
 
+class Targa(models.Model):
+    numero = models.CharField(max_length=10, primary_key=True)
+    attiva = models.BooleanField(default=True)
+    telaio = models.ForeignKey(Veicolo, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Targa"
+        verbose_name_plural = "Targhe"
+
+    def __str__(self):
+        return self.numero
 
 class Attiva(models.Model):
     targa = models.ForeignKey('Targa', on_delete=models.CASCADE, to_field='numero')
@@ -38,9 +50,7 @@ class Restituita(models.Model):
 
     def __str__(self):
         return f'{self.targa.numero} restituita il {self.data_restituzione}'
-
-
-
+    
 class Revisione(models.Model):
     numero = models.AutoField(primary_key=True)
     targaNumero = models.ForeignKey(Targa, on_delete=models.CASCADE)
