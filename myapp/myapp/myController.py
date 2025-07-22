@@ -1,5 +1,10 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from django.db.models import Q
+from django.contrib import messages
+from .models import Revisione, Targa
+
 def index(request):
     o1 = "<html> <body>"
     o2 = "<p>Welcome to DJANGO</p>"
@@ -13,4 +18,56 @@ def index2(request):
     "<p>Welcome to DJANGO again</p>")
     response.write("</body> </html>")
     return response
+# app/views.py
+
+
+def gestione_revisioni(request):
+    # Gestione eliminazione revisione
+    if request.method == 'POST':
+        table = request.POST.get('table')
+        id_rev = request.POST.get('id')
+
+        if table != 'revisione':
+            messages.error(request, 'Tipo di tabella non valido.')
+            return redirect('gestione_revisioni')
+
+        try:
+            Revisione.objects.get(numero=id_rev).delete()
+            messages.success(request, 'Revisione eliminata con successo.')
+        except Revisione.DoesNotExist:
+            messages.error(request, 'Revisione non trovata.')
+        except Exception as e:
+            messages.error(request, f'Errore durante l\'eliminazione: {str(e)}')
+
+        return redirect('gestione_revisioni')
+
+    # Filtri
+    filters = {}
+    if 'id_revisione' in request.GET and request.GET['id_revisione']:
+        filters['numero'] = request.GET['id_revisione']
+    if 'dataRev' in request.GET and request.GET['dataRev']:
+        filters['dataRev'] = request.GET['dataRev']
+    if 'stato' in request.GET:
+        if request.GET['stato'] == 'superata':
+            filters['esito'] = 'Superata'
+        elif request.GET['stato'] == 'non_superata':
+            filters['esito'] = 'Non superata'
+
+    # Ordinamento
+    valid_columns = ['numero', 'targaNumero', 'dataRev']
+    order_by = request.GET.get('sort', 'numero')
+    order_dir = request.GET.get('dir', 'asc')
+    if order_by not in valid_columns:
+        order_by = 'numero'
+    if order_dir == 'desc':
+        order_by = '-' + order_by
+
+    revisioni = Revisione.objects.filter(**filters).order_by(order_by)
+
+    return render(request, 'app/revisioni_list.html', {
+        'revisioni': revisioni,
+        'sort': request.GET.get('sort', ''),
+        'dir': request.GET.get('dir', ''),
+    })
+
 
