@@ -64,7 +64,7 @@ def gestione_revisioni(request):
 
     revisioni = Revisione.objects.filter(**filters).order_by(order_by)
 
-    return render(request, 'myapp/revisione.html', {
+    return render(request, 'revisione.html', {
         'revisioni': revisioni,
         'sort': request.GET.get('sort', ''),
         'dir': request.GET.get('dir', ''),
