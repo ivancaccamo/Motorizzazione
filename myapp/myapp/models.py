@@ -69,6 +69,8 @@ class Revisione(models.Model):
         blank=True,
         default=''
     )
+    motivazione = models.TextField(blank=True, null=True)  # ✅ AGGIUNTO
+    
     class Meta:
         verbose_name = "Revisione"
         verbose_name_plural = "Revisioni"

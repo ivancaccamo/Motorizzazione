@@ -4,7 +4,7 @@ import string
 from datetime import datetime, timedelta
 import django
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myapp.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myapp.settings") 
 django.setup()
 
 from myapp.models import Veicolo, Targa, Attiva, Restituita, Revisione
@@ -89,7 +89,7 @@ for _ in range(NUM_VEICOLI):
 for rec in active_targhe:
     targa = rec['numero']
     t = Targa.objects.get(numero=targa)
-    next_rev = rec['dataEm'] + timedelta(days=730)
+    next_rev = (rec['dataEm'] + timedelta(days=730)).date()
     while next_rev < datetime.now().date():
         esito = 'Superata' if random.randint(1, 100) <= 90 else 'Non superata'
         motivazione = None if esito == 'Superata' else random.choice(['Freni insufficienti', 'Emissioni eccessive', 'Fari difettosi'])
