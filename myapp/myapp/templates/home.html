@@ -1,8 +1,58 @@
-{% extends 'base.html' %}
-
-{% block title %}Homepage{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% load static %}
 {% block content %}
-<h2>Benvenuto nel sistema Motorizzazione</h2>
+<div class="content">
+    <h2 style="text-align: center; margin: 15px 0 15px 0;" class="mb-3">
+        Benvenuto nel Sistema di Gestione Veicoli
+    </h2>
 
+    <!-- Statistiche principali -->
+    <div class="card-row d-flex justify-content-between mb-4">
+        <div class="card-custom text-center">
+            <i class="bi bi-truck icon display-4 mb-2 text-primary"></i>
+            <h5>Veicoli</h5>
+            <p class="display-5 mb-0">{{ count_veicoli }}</p>
+        </div>
+        <div class="card-custom text-center">
+            <i class="bi bi-credit-card-2-front icon display-4 mb-2 text-success"></i>
+            <h5>Targhe</h5>
+            <p class="display-5 mb-0">{{ count_targhe }}</p>
+        </div>
+        <div class="card-custom text-center">
+            <i class="bi bi-check2-circle icon display-4 mb-2 text-warning"></i>
+            <h5>Revisioni</h5>
+            <p class="display-5 mb-0">{{ count_revisioni }}</p>
+        </div>
+    </div>
+
+    <!-- Grafici -->
+    <div class="chart-row d-flex justify-content-between mb-4">
+        <div class="chart-container flex-fill mx-2">
+            <h5 class="text-center">Veicoli</h5>
+            <canvas id="chartVeicoli" height="200"></canvas>
+        </div>
+        <div class="chart-container flex-fill mx-2">
+            <h5 class="text-center">Distribuzione Targhe</h5>
+            <canvas id="chartTarghe" height="200"></canvas>
+        </div>
+        <div class="chart-container flex-fill mx-2">
+            <h5 class="text-center">Esito Revisioni</h5>
+            <canvas id="chartRevisione" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const chartData = {
+        veicoliConAttiva: {{ veicoli_con_attiva }},
+        veicoliSenza: {{ veicoli_senza }},
+        attiveTarghe: {{ attive_targhe }},
+        restituiteTarghe: {{ restituite_targhe }},
+        revSuperate: {{ rev_superate }},
+        revNonSuperate: {{ rev_non_superate }},
+    };
+</script>
+<script src="{% static 'function.js' %}"></script>
 {% endblock %}

@@ -19,16 +19,16 @@ from django.urls import path
 from django.conf.urls import include
 from . import myController
 urlpatterns = [
- path("", myController.gestione_revisioni, 
-name="index"),
- path('admin/', admin.site.urls),
- #path('revisione/', myController.gestione_revisioni, name='gestione_revisioni'),
- #path('revisione/<int:id>/', myController.gestione_revisioni, name='gestione_revisioni_id'),
- path('revisione/create/', myController.create, name='create'),
- #path('revisione/delete/', myController.gestione_revisioni, name='delete'),
- #path('revisione/update/', myController.gestione_revisioni, name='update'),
- #path('revisione/search/', myController.gestione_revisioni, name='search'),
+path("revisione/", myController.gestioneRevisione,   name="gestione_revisioni"),
+path('admin/', admin.site.urls),
 path('create/', myController.create, name='create'),
+path('targhe/', myController.gestioneTarghe, name='gestione_targhe'),
+path('veicoli/', myController.gestioneVeicoli, name='gestione_veicoli'),
+path('revisioni/crea/', myController.create, name='crea_revisione'),
+path('', myController.home, name='home'),
+path('dettagli/<str:table>/<str:id>/', myController.dettagli_record, name='dettagli_record'),
+path('modifica/<str:table>/<str:id>/', myController.modifica, name='modifica'),
+
 #path('read/', myController.read, name='read'),
 #path('update/', myController.update, name='update')
  ]

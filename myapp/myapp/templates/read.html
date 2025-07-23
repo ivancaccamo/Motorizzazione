@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <title>Gestione Targhe</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<h2>Dettagli {{ table|title }}</h2>
+
+{% if message %}
+<div class="message {% if "successo" in message %}success{% else %}error{% endif %}">
+    {{ message }}
+</div>
+{% endif %}
+
+{% if table == 'veicolo' %}
+    <dl>
+        <dt>Telaio</dt><dd>{{ data.telaio }}</dd>
+        <dt>Marca</dt><dd>{{ data.marca }}</dd>
+        <dt>Modello</dt><dd>{{ data.modello }}</dd>
+        <dt>Data Produzione</dt><dd>{{ data.dataProd }}</dd>
+    </dl>
+
+    <h3>Targhe Attive</h3>
+    {% if related.attive %}
+        <ul>
+            {% for t in related.attive %}
+                <li>
+                    {{ t.numero }} - {{ t.dataEm }}
+                    <form method="post" style="display:inline;">{% csrf_token %}
+                        <input type="hidden" name="targa_numero" value="{{ t.numero }}">
+                        <button type="submit" class="btn-delete">Restituisci</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nessuna targa attiva.</p>
+    {% endif %}
+
+    <h3>Targhe Restituite</h3>
+    {% if related.restituite %}
+        <ul>
+            {% for t in related.restituite %}
+                <li>{{ t.numero }} - restituita il {{ t.restituita.dataRes }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nessuna targa restituita.</p>
+    {% endif %}
+
+{% elif table == 'targa' %}
+    <dl>
+        <dt>Numero</dt><dd>{{ data.numero }}</dd>
+        <dt>Data Emissione</dt><dd>{{ data.dataEm }}</dd>
+        <dt>Stato</dt><dd>{{ related.stato }}</dd>
+    </dl>
+
+    {% if related.stato == 'Attiva' %}
+        <h3>Veicolo associato</h3>
+        <p>{{ related.veicolo }}</p>
+    {% elif related.restituzione %}
+        <p>Restituita il: {{ related.restituzione.dataRes }}</p>
+    {% endif %}
+
+    <h3>Revisioni associate</h3>
+    <ul>
+        {% for rev in related.revisioni %}
+            <li>{{ rev.numero }} - {{ rev.dataRev }} - {{ rev.esito }}</li>
+        {% empty %}
+            <li>Nessuna revisione trovata.</li>
+        {% endfor %}
+    </ul>
+
+{% elif table == 'revisione' %}
+    <dl>
+        <dt>ID</dt><dd>{{ data.numero }}</dd>
+        <dt>Targa</dt><dd>{{ related.targa.numero }}</dd>
+        <dt>Data Revisione</dt><dd>{{ data.dataRev }}</dd>
+        <dt>Esito</dt><dd>{{ data.esito }}</dd>
+        {% if data.esito == 'Non superata' %}
+            <dt>Motivazione</dt><dd>{{ data.motivazione }}</dd>
+        {% endif %}
+    </dl>
+{% endif %}
+
+<a href="{% url 'gestione_'|add:table %}" class="btn-cancel">Torna indietro</a>
+{% endblock %}

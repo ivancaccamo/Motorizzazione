@@ -1,53 +1,81 @@
-<!-- templates/app/revisioni_list.html -->
+<!-- templates/revisione.html -->
+{% extends "base.html" %}
 {% load static %}
+
+{% block content %}
+    <!-- contenuto qui -->
+
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <title>Gestione Revisioni</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <a href="{% url 'create' %}?table=revisione" class="btn-add">Aggiungi Nuova Revisione</a>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
 </head>
 <body>
-    <a href="{% url 'create' %}?table=revisione" class="btn-add">Aggiungi Nuova Revisione</a>
-{# {% include 'includes/header.html' %} #}
-{# {% include 'includes/navigation.html' %} #}
-<div class="container">
-   {# {% include 'includes/sidebar.html' %} #}
+   
 
-    <div class="content">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="message {{ message.tags }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
+    <div class="container">
+       
+
+        <div class="content">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="header-bar">
+                <h2>Gestione Revisioni</h2>
+                <a href="" class="btn-add">Aggiungi Nuova Revisione</a>
+            </div>
+
+            {% if revisioni.exists %}
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+<th>
+    <a href="?sort=numero&dir={% if sort == 'numero' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+        ID
+        {% if sort == 'numero' %}
+            {% if dir == 'asc' %}↑{% else %}↓{% endif %}
+        {% else %}
+            ↑↓
         {% endif %}
-
-        <div class="header-bar">
-            <h2>Gestione Revisioni</h2>
-            <a href="{% url 'create' %}" class="btn-add">Aggiungi Nuova Revisione</a>
-        </div>
-
-        {% if revisioni %}
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th><a href="?sort=numero&dir={% if sort == 'numero' and dir == 'asc' %}desc{% else %}asc{% endif %}">ID</a></th>
-                            <th><a href="?sort=targaNumero&dir={% if sort == 'targaNumero' and dir == 'asc' %}desc{% else %}asc{% endif %}">Targa</a></th>
-                            <th><a href="?sort=dataRev&dir={% if sort == 'dataRev' and dir == 'asc' %}desc{% else %}asc{% endif %}">Data Revisione</a></th>
-                            <th>Esito</th>
-                            <th>Azioni</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for rev in revisioni %}
+    </a>
+<th>
+    <a href="?sort=targaNumero__numero&dir={% if sort == 'targaNumero__numero' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+        Targa
+        {% if sort == 'targaNumero__numero' %}
+            {% if dir == 'asc' %}↑{% else %}↓{% endif %}
+        {% else %}
+            ↑↓
+        {% endif %}
+    </a>
+</th>
+<th>
+    <a href="?sort=dataRev&dir={% if sort == 'dataRev' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+        Data Revisione
+        {% if sort == 'dataRev' %}
+            {% if dir == 'asc' %}↑{% else %}↓{% endif %}
+        {% else %}
+            ↑↓
+        {% endif %}
+    </a>
+</th>
+                                <th>Esito</th>
+                                <th>Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rev in revisioni %}
                             <tr>
                                 <td>{{ rev.numero }}</td>
-                                <td>
-                                    <a href="{% url 'read_targa' rev.targaNumero %}" class="targa-link">{{ rev.targaNumero }}</a>
-                                </td>
+                                <td><a href="{% url 'dettaglio_targa' rev.targaNumero.numero %}">{{ rev.targaNumero.numero }}</a></td>
                                 <td>{{ rev.dataRev }}</td>
                                 <td>
                                     {% if rev.esito == 'Superata' %}
@@ -59,9 +87,9 @@
                                     {% endif %}
                                 </td>
                                 <td class="crud-options">
-                                    <a href="{% url 'read_revisione' rev.numero %}" class="view">Visualizza</a>
-                                    <a href="{% url 'update_revisione' rev.numero %}" class="edit">Modifica</a>
-                                    <form method="post" action="" style="display:inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questa revisione?');">
+                                    <a href="{% url 'dettaglio_revisione' rev.numero %}" class="view">Visualizza</a>
+                                    <a href="{% url 'modifica_revisione' rev.numero %}" class="edit">Modifica</a>
+                                    <form action="" method="POST" style="display:inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questa revisione?');">
                                         {% csrf_token %}
                                         <input type="hidden" name="table" value="revisione">
                                         <input type="hidden" name="id" value="{{ rev.numero }}">
@@ -69,26 +97,23 @@
                                     </form>
                                 </td>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <p>Nessuna revisione trovata.</p>
-        {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>Nessuna revisione trovata.</p>
+            {% endif %}
+        </div>
     </div>
-</div>
 
-{# {% include 'includes/footer.html' %} #}
-<script src="{% static 'js/function.js' %}"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        setTimeout(() => {
-            const msg = document.querySelector(".message");
-            if (msg) msg.style.display = "none";
-        }, 4000);
-    });
-</script>
+    
+    <script src="{% static 'js/function.js' %}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            hideMessageAfterDelay(); // sparisce dopo 4s
+        });
+    </script>
 </body>
 </html>
-
+{% endblock %}

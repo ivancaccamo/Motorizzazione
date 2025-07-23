@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+   
+
+    <div class="content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="header-bar">
+            <h2>Gestione Veicoli</h2>
+            <a href="{% url 'create' %}" class="btn-add">Aggiungi Nuovo Veicolo</a>
+        </div>
+
+        {% if veicoli.exists %}
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>
+                                <a href="?sort=telaio&dir={% if sort == 'telaio' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                                    Telaio {% if sort == 'telaio' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?sort=marca&dir={% if sort == 'marca' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                                    Marca {% if sort == 'marca' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?sort=modello&dir={% if sort == 'modello' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                                    Modello {% if sort == 'modello' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?sort=data_produzione&dir={% if sort == 'data_produzione' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                                    Data Produzione {% if sort == 'data_produzione' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
+                                </a>
+                            </th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in veicoli %}
+                            <tr>
+                                <td>{{ v.telaio }}</td>
+                                <td>{{ v.marca }}</td>
+                                <td>{{ v.modello }}</td>
+                                <td>{{ v.data_produzione }}</td>
+                                <td class="crud-options">
+                                    <a href="{% url 'dettaglio_veicolo' v.telaio %}" class="view">Visualizza</a>
+                                    <a href="{% url 'modifica_veicolo' v.telaio %}" class="edit">Modifica</a>
+                                    <form method="post" style="display:inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questo veicolo?');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="table" value="veicolo">
+                                        <input type="hidden" name="id" value="{{ v.telaio }}">
+                                        <button type="submit" class="delete">Elimina</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>Nessun veicolo trovato.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/function.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        hideMessageAfterDelay();
+    });
+</script>
+{% endblock %}
