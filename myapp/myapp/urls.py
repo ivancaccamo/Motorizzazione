@@ -20,6 +20,16 @@ from django.conf.urls import include
 from . import myController
 urlpatterns = [
  path("", myController.gestione_revisioni, 
-name="index")
+name="index"),
+ path('admin/', admin.site.urls),
+ #path('revisione/', myController.gestione_revisioni, name='gestione_revisioni'),
+ #path('revisione/<int:id>/', myController.gestione_revisioni, name='gestione_revisioni_id'),
+ path('revisione/create/', myController.create, name='create'),
+ #path('revisione/delete/', myController.gestione_revisioni, name='delete'),
+ #path('revisione/update/', myController.gestione_revisioni, name='update'),
+ #path('revisione/search/', myController.gestione_revisioni, name='search'),
+path('create/', myController.create, name='create'),
+#path('read/', myController.read, name='read'),
+#path('update/', myController.update, name='update')
  ]
 

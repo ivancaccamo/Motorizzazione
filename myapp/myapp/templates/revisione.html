@@ -6,9 +6,10 @@
     <meta charset="UTF-8">
     <title>Gestione Revisioni</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <a href="{% url 'create' %}?table=revisione" class="btn-add">Aggiungi Nuova Revisione</a>
 </head>
 <body>
-
+    <a href="{% url 'create' %}?table=revisione" class="btn-add">Aggiungi Nuova Revisione</a>
 {# {% include 'includes/header.html' %} #}
 {# {% include 'includes/navigation.html' %} #}
 <div class="container">
@@ -25,7 +26,7 @@
 
         <div class="header-bar">
             <h2>Gestione Revisioni</h2>
-            <a href="{% url 'create_revisione' %}" class="btn-add">Aggiungi Nuova Revisione</a>
+            <a href="{% url 'create' %}" class="btn-add">Aggiungi Nuova Revisione</a>
         </div>
 
         {% if revisioni %}

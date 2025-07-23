@@ -34,6 +34,8 @@ class Attiva(models.Model):
     class Meta:
         unique_together = ('targaNumero', 'veicoloTelaio')
         db_table = 'Attiva'  # per mantenere il nome della tabella se necessario
+        verbose_name = "Attiva"
+        verbose_name_plural = "Attive"
 
     def __str__(self):
         return f'{self.targa.numero} - {self.veicolo.telaio}'
@@ -46,6 +48,9 @@ class Restituita(models.Model):
     class Meta:
         unique_together = ('targaNumero', 'veicoloTelaio')
         db_table = 'Restituita'
+        verbose_name = "Restituita"
+        verbose_name_plural = "Restituite"
+       
 
     def __str__(self):
         return f'{self.targa.numero} restituita il {self.data_restituzione}'
@@ -64,3 +69,6 @@ class Revisione(models.Model):
         blank=True,
         default=''
     )
+    class Meta:
+        verbose_name = "Revisione"
+        verbose_name_plural = "Revisioni"

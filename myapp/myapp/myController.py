@@ -1,28 +1,25 @@
-from django.shortcuts import render
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
 from django.db.models import Q
 from django.contrib import messages
-from .models import Revisione, Targa
+from .models import Revisione, Targa, Veicolo, Attiva  # Aggiunti per create()
 
 def index(request):
     o1 = "<html> <body>"
     o2 = "<p>Welcome to DJANGO</p>"
     o3 = "</body> </html>"
     return HttpResponse(o1 + o2 + o3)
+
 def index2(request):
-    response = HttpResponse(
-    content_type="text/html")
+    response = HttpResponse(content_type="text/html")
     response.write("<html> <body>")
-    response.write(
-    "<p>Welcome to DJANGO again</p>")
+    response.write("<p>Welcome to DJANGO again</p>")
     response.write("</body> </html>")
     return response
-# app/views.py
 
+# ---------------------------- GESTIONE REVISIONI ----------------------------
 
 def gestione_revisioni(request):
-    # Gestione eliminazione revisione
     if request.method == 'POST':
         table = request.POST.get('table')
         id_rev = request.POST.get('id')
@@ -41,7 +38,6 @@ def gestione_revisioni(request):
 
         return redirect('gestione_revisioni')
 
-    # Filtri
     filters = {}
     if 'id_revisione' in request.GET and request.GET['id_revisione']:
         filters['numero'] = request.GET['id_revisione']
@@ -53,7 +49,6 @@ def gestione_revisioni(request):
         elif request.GET['stato'] == 'non_superata':
             filters['esito'] = 'Non superata'
 
-    # Ordinamento
     valid_columns = ['numero', 'targaNumero', 'dataRev']
     order_by = request.GET.get('sort', 'numero')
     order_dir = request.GET.get('dir', 'asc')
@@ -71,3 +66,62 @@ def gestione_revisioni(request):
     })
 
 
+# ---------------------------- CREATE GENERICO ----------------------------
+
+def create(request):
+    table = request.GET.get('table')
+
+    if request.method == 'POST':
+        if table == 'veicolo':
+            telaio = ''.join(request.POST.getlist('telaio')).upper()
+            marca = request.POST.get('marca')
+            modello = request.POST.get('modello')
+            data = request.POST.get('dataProd')
+
+            if len(telaio) != 17:
+                messages.error(request, "Il numero di telaio deve essere di 17 caratteri.")
+            elif Veicolo.objects.filter(telaio=telaio).exists():
+                messages.error(request, "Esiste già un veicolo con questo telaio.")
+            else:
+                Veicolo.objects.create(telaio=telaio, marca=marca, modello=modello, data_produzione=data)
+                messages.success(request, "Veicolo aggiunto con successo.")
+                return redirect('gestione_revisioni')
+
+        elif table == 'targa':
+            numero = ''.join(request.POST.getlist('targa')).upper()
+            data_em = request.POST.get('dataEm')
+            telaio = request.POST.get('veicolo_telaio')
+
+            if Targa.objects.filter(numero=numero).exists():
+                messages.error(request, "Targa già esistente.")
+            else:
+                try:
+                    Targa.objects.create(numero=numero, dataEm=data_em)
+                    Attiva.objects.create(targa_id=numero, veicolo_id=telaio)
+                    messages.success(request, "Targa aggiunta con successo.")
+                    return redirect('gestione_revisioni')
+                except Exception as e:
+                    messages.error(request, f"Errore: {e}")
+
+        elif table == 'revisione':
+            targa_numero = request.POST.get('numero_targa')
+            data_rev = request.POST.get('dataRev')
+            esito = request.POST.get('esito')
+            motivazione = request.POST.get('motivazione') if esito == 'Non superata' else ''
+
+            Revisione.objects.create(
+                targaNumero_id=targa_numero,
+                dataRev=data_rev,
+                esito=esito,
+                motivazione=motivazione
+            )
+            messages.success(request, "Revisione aggiunta con successo.")
+            return redirect('gestione_revisioni')
+
+    context = {
+        'table': table,
+        'veicoli': Veicolo.objects.exclude(telaio__in=Attiva.objects.values_list('veicolo_id', flat=True)),
+        'targhe': Targa.objects.all(),
+    }
+
+    return render(request, 'create.html', context)
