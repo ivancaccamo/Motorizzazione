@@ -81,49 +81,60 @@ def dettagli_record(request, table, id):
     data = {}
     related = {}
 
+    # sicurezza
+    table = table.lower()
     if table not in ['veicolo', 'targa', 'revisione']:
         return redirect('home')
 
+    # restituzione targa
+    if request.method == 'POST' and 'targa_numero' in request.POST:
+        targa_numero = request.POST['targa_numero']
+        oggi = date.today()
+
+        try:
+            targa = Targa.objects.get(numero=targa_numero)
+            attiva = Attiva.objects.get(targaNumero=targa)
+            veicolo = attiva.veicoloTelaio
+            Restituita.objects.create(targaNumero=targa, dataRes=oggi, veicoloTelaio=veicolo)
+            attiva.delete()
+            message = 'Targa restituita con successo.'
+        except Exception as e:
+            message = f'Errore nella restituzione: {e}'
+
+    # logica per tipo di tabella
     if table == 'veicolo':
         veicolo = get_object_or_404(Veicolo, pk=id)
         data = veicolo
-        related['attive'] = Targa.objects.filter(attiva__veicoloTelaio=veicolo.telaio)
-        related['restituite'] = Targa.objects.filter(restituita__veicoloTelaio=veicolo.telaio)
 
-        # Gestione restituzione targa
-        if request.method == 'POST':
-            numero = request.POST.get('targa_numero')
-            targa = Targa.objects.get(numero=numero)
-            Restituita.objects.create(targaNumero=targa, dataRes=timezone.now(), veicoloTelaio=veicolo)
-            Attiva.objects.filter(targaNumero=targa).delete()
-            message = "Targa restituita con successo."
+        related['attive'] = Attiva.objects.filter(veicoloTelaio=veicolo)
+        related['restituite'] = Restituita.objects.filter(veicoloTelaio=veicolo)
 
     elif table == 'targa':
         targa = get_object_or_404(Targa, pk=id)
         data = targa
 
-        if Attiva.objects.filter(targaNumero=targa).exists():
+        attiva = Attiva.objects.filter(targaNumero=targa).first()
+        if attiva:
             related['stato'] = 'Attiva'
-            related['veicolo'] = Attiva.objects.get(targaNumero=targa).veicoloTelaio
+            related['veicolo'] = attiva.veicoloTelaio
         else:
             related['stato'] = 'Restituita'
-            restituita = Restituita.objects.filter(targaNumero=targa).first()
-            related['restituzione'] = restituita
+            related['restituzione'] = Restituita.objects.filter(targaNumero=targa).first()
 
         related['revisioni'] = Revisione.objects.filter(targaNumero=targa).order_by('-dataRev')
 
     elif table == 'revisione':
         revisione = get_object_or_404(Revisione, pk=id)
         data = revisione
-        related['targa'] = revisione.targaNumero
 
     return render(request, 'dettagli.html', {
         'table': table,
+        'id': id,
         'data': data,
         'related': related,
-        'message': message,
+        'message': message
     })
-    
+ 
 def index(request):
     o1 = "<html> <body>"
     o2 = "<p>Welcome to DJANGO</p>"
