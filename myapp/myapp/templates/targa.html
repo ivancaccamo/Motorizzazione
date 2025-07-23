@@ -57,8 +57,8 @@
                                     {% endif %}
                                 </td>
                                 <td class="crud-options">
-                                    <a href="{% url 'dettaglio_targa' targa.numero %}" class="view">Visualizza</a>
-                                    <a href="{% url 'modifica_targa' targa.numero %}" class="edit">Modifica</a>
+                                    <a href="{% url 'dettaglio_record' targa.numero %}" class="view">Visualizza</a>
+                                    <a href="{% url 'modifica' targa.numero %}" class="edit">Modifica</a>
                                     <form action="" method="POST" style="display:inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questa targa?');">
                                         {% csrf_token %}
                                         <input type="hidden" name="table" value="targa">

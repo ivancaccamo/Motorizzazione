@@ -12,67 +12,68 @@ from django.db import transaction
 
 
 def modifica(request, table, id):
-    context = {'table': table, 'id': id}
-    model_data = None
-
-    if table not in ['veicolo', 'targa', 'revisione']:
-        messages.error(request, "Tipo non valido.")
+    context = {'table': table}
+    
+    # Pre-caricamento dati
+    if table == 'veicolo':
+        obj = get_object_or_404(Veicolo, telaio=id)
+        context['veicolo'] = obj
+    elif table == 'targa':
+        obj = get_object_or_404(Targa, numero=id)
+        context['targa'] = obj
+    elif table == 'revisione':
+        obj = get_object_or_404(Revisione, numero=id)
+        context['revisione'] = obj
+    else:
+        messages.error(request, "Operazione non supportata.")
         return redirect('home')
 
-    try:
-        if table == 'veicolo':
-            model_data = get_object_or_404(Veicolo, pk=id)
-        elif table == 'targa':
-            model_data = get_object_or_404(Targa, pk=id)
-        elif table == 'revisione':
-            model_data = get_object_or_404(Revisione, pk=id)
-    except Exception as e:
-        messages.error(request, f"Errore: {str(e)}")
-        return redirect('home')
-
+    # Gestione POST
     if request.method == 'POST':
         try:
             with transaction.atomic():
                 if table == 'veicolo':
-                    nuovo_telaio = request.POST.get('telaio')
+                    nuovo_telaio = request.POST.get('telaio_hidden')
                     if nuovo_telaio != id and Veicolo.objects.filter(telaio=nuovo_telaio).exists():
-                        raise Exception("Telaio già esistente.")
-
-                    Attiva.objects.filter(veicoloTelaio=id).update(veicoloTelaio=nuovo_telaio)
-                    Restituita.objects.filter(veicoloTelaio=id).update(veicoloTelaio=nuovo_telaio)
-
-                    model_data.telaio = nuovo_telaio
-                    model_data.marca = request.POST.get('marca')
-                    model_data.modello = request.POST.get('modello')
-                    model_data.dataProd = request.POST.get('dataProd')
-                    model_data.save()
-                    return redirect('read', table='veicolo', id=nuovo_telaio)
+                        messages.error(request, f"Telaio '{escape(nuovo_telaio)}' già presente.")
+                    else:
+                        obj.marca = request.POST.get('marca')
+                        obj.modello = request.POST.get('modello')
+                        obj.dataProd = request.POST.get('dataProd')
+                        if nuovo_telaio != id:
+                            Attiva.objects.filter(veicoloTelaio=id).update(veicoloTelaio=nuovo_telaio)
+                            Restituita.objects.filter(veicoloTelaio=id).update(veicoloTelaio=nuovo_telaio)
+                            obj.telaio = nuovo_telaio
+                        obj.save()
+                        messages.success(request, "Veicolo aggiornato con successo.")
+                        return redirect('dettagli_record', table='veicolo', id=obj.telaio)
 
                 elif table == 'targa':
-                    nuovo_numero = request.POST.get('numero')
+                    nuovo_numero = request.POST.get('numero_hidden')
                     if nuovo_numero != id and Targa.objects.filter(numero=nuovo_numero).exists():
-                        raise Exception("Numero targa già esistente.")
-
-                    Attiva.objects.filter(targaNumero=id).update(targaNumero=nuovo_numero)
-                    Restituita.objects.filter(targaNumero=id).update(targaNumero=nuovo_numero)
-                    Revisione.objects.filter(targaNumero=id).update(targaNumero=nuovo_numero)
-
-                    model_data.numero = nuovo_numero
-                    model_data.dataEm = request.POST.get('dataEm')
-                    model_data.save()
-                    return redirect('read', table='targa', id=nuovo_numero)
+                        messages.error(request, f"Targa '{escape(nuovo_numero)}' già presente.")
+                    else:
+                        obj.dataEm = request.POST.get('dataEm')
+                        if nuovo_numero != id:
+                            Revisione.objects.filter(targaNumero=id).update(targaNumero=nuovo_numero)
+                            Attiva.objects.filter(targaNumero=id).update(targaNumero=nuovo_numero)
+                            Restituita.objects.filter(targaNumero=id).update(targaNumero=nuovo_numero)
+                            obj.numero = nuovo_numero
+                        obj.save()
+                        messages.success(request, "Targa aggiornata con successo.")
+                        return redirect('dettagli_record', table='targa', id=obj.numero)
 
                 elif table == 'revisione':
-                    model_data.dataRev = request.POST.get('dataRev')
-                    model_data.esito = request.POST.get('esito')
-                    model_data.motivazione = request.POST.get('motivazione') if model_data.esito == 'Non superata' else ''
-                    model_data.save()
-                    return redirect('read', table='revisione', id=id)
+                    obj.dataRev = request.POST.get('dataRev')
+                    obj.esito = request.POST.get('esito')
+                    obj.motivazione = request.POST.get('motivazione') if obj.esito == 'Non superata' else ''
+                    obj.save()
+                    messages.success(request, "Revisione aggiornata con successo.")
+                    return redirect('dettagli_record', table='revisione', id=obj.numero)
 
         except Exception as e:
-            messages.error(request, f"Errore durante il salvataggio: {str(e)}")
-
-    context['data'] = model_data
+            messages.error(request, f"Errore durante la modifica: {e}")
+    
     return render(request, 'modifica.html', context)
 
 def dettagli_record(request, table, id):
@@ -208,59 +209,73 @@ def gestioneRevisione(request):
 
 def create(request):
     table = request.GET.get('table')
+    message = ''
+    success = False
 
     if request.method == 'POST':
         if table == 'veicolo':
             telaio = ''.join(request.POST.getlist('telaio')).upper()
-            marca = request.POST.get('marca')
-            modello = request.POST.get('modello')
-            data = request.POST.get('dataProd')
-
             if len(telaio) != 17:
-                messages.error(request, "Il numero di telaio deve essere di 17 caratteri.")
+                message = "Errore: Il numero di telaio deve contenere esattamente 17 caratteri."
             elif Veicolo.objects.filter(telaio=telaio).exists():
-                messages.error(request, "Esiste già un veicolo con questo telaio.")
+                message = "Errore: Esiste già un veicolo con questo numero di telaio."
             else:
-                Veicolo.objects.create(telaio=telaio, marca=marca, modello=modello, data_produzione=data)
-                messages.success(request, "Veicolo aggiunto con successo.")
-                return redirect('gestione_revisioni')
+                try:
+                    Veicolo.objects.create(
+                        telaio=telaio,
+                        marca=request.POST['marca'],
+                        modello=request.POST['modello'],
+                        dataProd=request.POST['dataProd']
+                    )
+                    message = "Veicolo aggiunto con successo."
+                    success = True
+                except Exception as e:
+                    message = f"Errore: {str(e)}"
 
         elif table == 'targa':
             numero = ''.join(request.POST.getlist('targa')).upper()
-            data_em = request.POST.get('dataEm')
-            telaio = request.POST.get('veicolo_telaio')
-
-            if Targa.objects.filter(numero=numero).exists():
-                messages.error(request, "Targa già esistente.")
+            if not re.match(r'^[A-HJ-NPR-Z]{2}[0-9]{3}[A-HJ-NPR-Z]{2}$', numero):
+                message = "❌ Errore: formato targa non valido."
+            elif Targa.objects.filter(numero=numero).exists():
+                message = "Errore: Esiste già una targa con questo numero."
             else:
                 try:
-                    Targa.objects.create(numero=numero, dataEm=data_em)
-                    Attiva.objects.create(targa_id=numero, veicolo_id=telaio)
-                    messages.success(request, "Targa aggiunta con successo.")
-                    return redirect('gestione_revisioni')
+                    targa = Targa.objects.create(numero=numero, dataEm=request.POST['dataEm'])
+                    Attiva.objects.create(
+                        targaNumero=targa,
+                        veicoloTelaio_id=request.POST['veicolo_telaio']
+                    )
+                    message = "Targa aggiunta con successo."
+                    success = True
                 except Exception as e:
-                    messages.error(request, f"Errore: {e}")
+                    message = f"Errore: {str(e)}"
 
         elif table == 'revisione':
-            targa_numero = request.POST.get('numero_targa')
-            data_rev = request.POST.get('dataRev')
-            esito = request.POST.get('esito')
-            motivazione = request.POST.get('motivazione') if esito == 'Non superata' else ''
+            try:
+                kwargs = {
+                    'targaNumero_id': request.POST['numero_targa'],
+                    'dataRev': request.POST['dataRev'],
+                    'esito': request.POST['esito']
+                }
+                if request.POST['esito'] == 'Non superata':
+                    kwargs['motivazione'] = request.POST.get('motivazione', '')
+                Revisione.objects.create(**kwargs)
+                message = "Revisione aggiunta con successo."
+                success = True
+            except Exception as e:
+                message = f"Errore: {str(e)}"
 
-            Revisione.objects.create(
-                targaNumero_id=targa_numero,
-                dataRev=data_rev,
-                esito=esito,
-                motivazione=motivazione
-            )
-            messages.success(request, "Revisione aggiunta con successo.")
-            return redirect('gestione_revisioni')
+        else:
+            return HttpResponseBadRequest("Tipo non supportato.")
 
-    context = {
-        'table': table,
-        'veicoli': Veicolo.objects.exclude(telaio__in=Attiva.objects.values_list('id', flat=True)),
-        'targhe': Targa.objects.all(),
-    }
+    context = {'table': table, 'message': message, 'success': success}
+
+    if table == 'targa':
+        context['veicoli_disponibili'] = Veicolo.objects.exclude(
+            telaio__in=Attiva.objects.values_list('veicoloTelaio_id', flat=True)
+        )
+    elif table == 'revisione':
+        context['targhe'] = Targa.objects.all()
 
     return render(request, 'create.html', context)
 

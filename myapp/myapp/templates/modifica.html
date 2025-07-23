@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content">
+  <h2>Modifica {{ table|title }}</h2>
+  {% if messages %}
+    {% for message in messages %}
+      <div class="message {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% if table == 'veicolo' %}
+    <form method="post">{% csrf_token %}
+      <label>Telaio:</label>
+      <div class="telaio-wrapper">
+        {% for char in veicolo.telaio %}
+          <div class="telaio-box">
+            <input type="text" maxlength="1" class="telaio-input" name="telaio[]" value="{{ char }}" required>
+          </div>
+        {% endfor %}
+      </div>
+      <input type="hidden" name="telaio_hidden" value="{{ veicolo.telaio }}">
+      <label>Marca:</label><input type="text" name="marca" value="{{ veicolo.marca }}" required>
+      <label>Modello:</label><input type="text" name="modello" value="{{ veicolo.modello }}" required>
+      <label>Data Produzione:</label><input type="date" name="dataProd" value="{{ veicolo.dataProd|date:'Y-m-d' }}" required>
+      <button type="submit" class="btn-primary">Salva</button>
+      <a href="{% url 'gestione_veicoli' %}" class="btn-cancel">Annulla</a>
+    </form>
+
+  {% elif table == 'targa' %}
+    <form method="post">{% csrf_token %}
+      <label>Numero Targa:</label>
+      <div class="targa-wrapper">
+        {% for char in targa.numero %}
+          <div class="targa-box">
+            <input type="text" maxlength="1" class="targa-input" name="targa[]" value="{{ char }}" required>
+          </div>
+        {% endfor %}
+      </div>
+      <input type="hidden" name="numero_hidden" value="{{ targa.numero }}">
+      <label>Data Emissione:</label><input type="date" name="dataEm" value="{{ targa.dataEm|date:'Y-m-d' }}" required>
+      <button type="submit" class="btn-primary">Salva</button>
+      <a href="{% url 'gestione_targhe' %}" class="btn-cancel">Annulla</a>
+    </form>
+
+  {% elif table == 'revisione' %}
+    <form method="post">{% csrf_token %}
+      <p><strong>ID:</strong> {{ revisione.numero }}</p>
+      <p><strong>Targa:</strong> {{ revisione.targaNumero }}</p>
+      <label>Data Revisione:</label><input type="date" name="dataRev" value="{{ revisione.dataRev|date:'Y-m-d' }}" required>
+      <label>Esito:</label>
+      <select name="esito" onchange="toggleMotivazione(this)">
+        <option value="superata" {% if revisione.esito == 'superata' %}selected{% endif %}>Superata</option>
+        <option value="Non superata" {% if revisione.esito == 'Non superata' %}selected{% endif %}>Non superata</option>
+      </select>
+      <div id="motivazioneDiv" style="display: {% if revisione.esito == 'Non superata' %}block{% else %}none{% endif %};">
+        <label>Motivazione:</label>
+        <textarea name="motivazione">{{ revisione.motivazione }}</textarea>
+      </div>
+      <button type="submit" class="btn-primary">Salva</button>
+      <a href="{% url 'gestione_revisioni' %}" class="btn-cancel">Annulla</a>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleMotivazione(sel) {
+    const div = document.getElementById('motivazioneDiv');
+    div.style.display = sel.value === 'Non superata' ? 'block' : 'none';
+}
+</script>
+{% endblock %}
