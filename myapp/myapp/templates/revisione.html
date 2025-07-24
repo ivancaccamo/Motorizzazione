@@ -81,7 +81,7 @@
                             {% for rev in revisioni %}
                             <tr>
                                 <td>{{ rev.numero }}</td>
-                                <td><a href="{% url 'dettaglio_record' 'targa' rev.targaNumero.numero %}">{{ rev.targaNumero.numero }}</a></td>
+                                <td><a href="{% url 'dettaglio_record' 'targa' rev.targaNumero.numero %}" class="targa-link">{{ rev.targaNumero.numero }}</a></td>
                                 <td>{{ rev.dataRev }}</td>
                                 <td>
                                     {% if rev.esito == 'Superata' %}
