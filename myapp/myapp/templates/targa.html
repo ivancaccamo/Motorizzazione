@@ -62,7 +62,7 @@
                         {% for targa in targhe %}
                             <tr>
                                 <td>{{ targa.numero }}</td>
-                                <td>{{ targa.dataEm }}</td>
+                                <td>{{ targa.dataEm|date:"Y-m-d" }}</td>
                                 <td>
                                     {% if targa.ha_attiva %}
                                         <span class="stato attiva">Attiva</span>

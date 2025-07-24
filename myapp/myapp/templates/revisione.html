@@ -65,7 +65,7 @@
                   {{ rev.targaNumero.numero }}
                 </a>
               </td>
-              <td>{{ rev.dataRev }}</td>
+              <td>{{ rev.dataRev|date:"Y-m-d" }}</td>
               <td>
                 {% if rev.esito == 'Superata' %}
                   Superata

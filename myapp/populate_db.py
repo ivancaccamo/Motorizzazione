@@ -68,32 +68,59 @@ for _ in range(NUM_VEICOLI):
     marca = random.choice(list(marche_modelli.keys()))
     modello = random.choice(marche_modelli[marca])
     data_prod = random_date()
-    veicolo = Veicolo.objects.create(telaio=telaio, marca=marca, modello=modello, data_produzione=data_prod)
+    veicolo = Veicolo.objects.create(
+        telaio=telaio,
+        marca=marca,
+        modello=modello,
+        data_produzione=data_prod
+    )
 
+    # Targa “attiva”
     if random.randint(1, 100) <= PERCENT_ACTIVE:
         targa = random_plate()
-        data_em = data_prod + timedelta(days=random.randint(30, 730))
-        t = Targa.objects.create(numero=targa, telaio=veicolo)
+        data_em = (data_prod + timedelta(days=random.randint(30, 730))).date()
+        t = Targa.objects.create(
+            numero=targa,
+            telaio=veicolo,
+            dataEm=data_em
+        )
         Attiva.objects.create(targaNumero=t, veicoloTelaio=veicolo)
         storage_targhe.append({'numero': targa, 'dataEm': data_em})
         active_targhe.append({'numero': targa, 'dataEm': data_em})
 
+    # Targhe di rotazione / restituite
     for _ in range(random.randint(0, MAX_ROTATIONS)):
-        d_em2 = random_date(data_prod.year, data_prod.year + 5)
+        d_em2 = random_date(data_prod.year, data_prod.year + 5).date()
         d_res2 = d_em2 + timedelta(days=random.randint(30, 1000))
         t2 = random_plate()
-        Targa.objects.create(numero=t2, telaio=veicolo)
-        Restituita.objects.create(targaNumero_id=t2, veicoloTelaio=veicolo, data_restituzione=d_res2)
+        Targa.objects.create(
+            numero=t2,
+            telaio=veicolo,
+            dataEm=d_em2
+        )
+        Restituita.objects.create(
+            targaNumero_id=t2,
+            veicoloTelaio=veicolo,
+            data_restituzione=d_res2
+        )
         storage_targhe.append({'numero': t2, 'dataEm': d_em2})
 
+# Generazione revisioni per le targhe attive
 for rec in active_targhe:
     targa = rec['numero']
     t = Targa.objects.get(numero=targa)
-    next_rev = (rec['dataEm'] + timedelta(days=730)).date()
+    next_rev = (rec['dataEm'] + timedelta(days=730))
     while next_rev < datetime.now().date():
         esito = 'Superata' if random.randint(1, 100) <= 90 else 'Non superata'
-        motivazione = None if esito == 'Superata' else random.choice(['Freni insufficienti', 'Emissioni eccessive', 'Fari difettosi'])
-        Revisione.objects.create(targaNumero=t, dataRev=next_rev, esito=esito, motivazione=motivazione)
+        motivazione = None if esito == 'Superata' else random.choice(
+            ['Freni insufficienti', 'Emissioni eccessive', 'Fari difettosi']
+        )
+        Revisione.objects.create(
+            targaNumero=t,
+            dataRev=next_rev,
+            esito=esito,
+            motivazione=motivazione
+        )
         next_rev += timedelta(days=int(730 + random.uniform(-60, 60)))
 
 print("✅ Database popolato con successo!")
