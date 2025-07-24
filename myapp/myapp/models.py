@@ -38,7 +38,7 @@ class Attiva(models.Model):
         verbose_name_plural = "Attive"
 
     def __str__(self):
-        return f'{self.targa.numero} - {self.veicolo.telaio}'
+       return f'{self.targaNumero.numero} – {self.veicoloTelaio.telaio}'
     
 class Restituita(models.Model):
     targaNumero = models.ForeignKey('Targa', on_delete=models.CASCADE, to_field='numero')
@@ -53,7 +53,7 @@ class Restituita(models.Model):
        
 
     def __str__(self):
-        return f'{self.targa.numero} restituita il {self.data_restituzione}'
+        return f'{self.targaNumero.numero} – {self.veicoloTelaio.telaio} restituita il {self.data_restituzione}'
     
 class Revisione(models.Model):
     numero = models.AutoField(primary_key=True)
@@ -74,3 +74,8 @@ class Revisione(models.Model):
     class Meta:
         verbose_name = "Revisione"
         verbose_name_plural = "Revisioni"
+
+    def __str__(self):
+        # scegli tu cosa far vedere, ad esempio:
+        return f"Rev. {self.numero} – {self.targaNumero.numero} del {self.dataRev}"
+    
