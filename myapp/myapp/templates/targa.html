@@ -16,13 +16,14 @@
         </form>
     </div>
 </div>
-<div class="container">
-    
 
-    <div class="content">
+
+   
         {% if messages %}
             {% for message in messages %}
-                <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+                <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                    {{ message }}                   
+                </div>
             {% endfor %}
         {% endif %}
 
@@ -30,7 +31,7 @@
             <h2>Gestione Targhe</h2>
             <a href="{% url 'create' %}" class="btn-add">Aggiungi Nuova Targa</a>
         </div>
-
+        
         {% if targhe.exists %}
             <div class="table-container">
                 <table>
@@ -88,7 +89,7 @@
             <p>Nessuna targa trovata.</p>
         {% endif %}
     </div>
-</div>
+
 {% endblock %}
 
 {% block extra_js %}

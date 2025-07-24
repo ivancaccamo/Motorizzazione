@@ -2,9 +2,6 @@
 {% load static %}
 
 {% block content %}
-<body>
-
-    <!-- Modal di conferma eliminazione -->
     <div id="modal-restituisci" class="modal" style="display:none;">
         <div class="modal-content">
             <span class="close" onclick="chiudiDialogRestituisci()">&times;</span>
@@ -19,24 +16,7 @@
         </div>
     </div>
     
-<div id="modal-restituisci" class="modal" style="display:none;">
-    <div class="modal-content">
-        <span class="close" onclick="chiudiDialogRestituisci()">&times;</span>
-        <h2>Conferma eliminazione targa</h2>
-        <p id="testo-restituisci"></p>
-        <form id="form-restituisci" method="POST" action="">
-            {% csrf_token %}
-            <input type="hidden" name="table" id="modal-table" value="">
-            <input type="hidden" name="id" id="modal-id" value="">
-            <button type="submit" class="btn-delete">Conferma</button>
-            <button type="button" class="btn-cancel" onclick="chiudiDialogRestituisci()">Annulla</button>
-        </form>
-    </div>
-</div>
-<div class="container">
-   
-
-    <div class="content">
+    
         {% if messages %}
             {% for message in messages %}
                 <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
@@ -49,7 +29,7 @@
             <h2>Gestione Veicoli</h2>
             <a href="{% url 'create' %}" class="btn-add">Aggiungi Nuovo Veicolo</a>
         </div>
-
+       
         {% if veicoli.exists %}
             <div class="table-container">
                 <table>
@@ -88,10 +68,8 @@
                                 <td class="crud-options">
                                     <a href="{% url 'dettaglio_record' 'veicolo' v.telaio %}" class="view">Visualizza</a>
                                     <a href="{% url 'modifica' 'veicolo' v.telaio %}" class="edit">Modifica</a>
-                                    <a href="#" class="delete"
-                                onclick="apriDialogDelete('targa', '{{ targa.numero|escapejs }}'); return false;">
-                                Elimina
-                               </a>
+                                    <a href="#" class="delete" onclick="apriDialogDelete('veicolo', '{{ veicolo.telaio|escapejs }}'); return false;">Elimina</a>
+
                                 </td>
                             </tr>
                         {% endfor %}
@@ -102,7 +80,7 @@
             <p>Nessun veicolo trovato.</p>
         {% endif %}
     </div>
-</div>
+
 {% endblock %}
 
 {% block extra_js %}

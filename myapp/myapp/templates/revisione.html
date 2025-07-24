@@ -17,20 +17,15 @@
             </form>
         </div>
     </div>
-<!DOCTYPE html>
 <html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <title>Gestione Revisioni</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-</head>
+
 <body>
-   
-
-    <div class="container">
-       
-
-        <div class="content">
+    
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
             {% if messages %}
                 {% for message in messages %}
                     <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
@@ -43,7 +38,7 @@
                 <h2>Gestione Revisioni</h2>
                 <a href="" class="btn-add">Aggiungi Nuova Revisione</a>
             </div>
-
+            
             {% if revisioni.exists %}
                 <div class="table-container">
                     <table>
@@ -101,7 +96,7 @@
                                     <a href="{% url 'dettaglio_record' 'revisione' rev.numero %}" class="view">Visualizza</a>
                                     <a href="{% url 'modifica' 'revisione' rev.numero %}" class="edit">Modifica</a>
                                     <a href="#" class="delete"
-                                onclick="apriDialogDelete('targa', '{{ targa.numero|escapejs }}'); return false;">
+                                onclick="apriDialogDelete('revisione', '{{ revisione.numero|escapejs }}'); return false;">
                                 Elimina
                                </a>
                                 </td>
@@ -114,7 +109,6 @@
                 <p>Nessuna revisione trovata.</p>
             {% endif %}
         </div>
-    </div>
 
     
     <script src="{% static 'function.js' %}"></script>

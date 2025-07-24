@@ -180,6 +180,7 @@ button:hover {
     padding: 20px;
     gap: 20px;
     flex-wrap: wrap;
+    width: 100%;
 }
 
 .container-delete {
