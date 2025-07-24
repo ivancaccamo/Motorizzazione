@@ -4,8 +4,19 @@
 
 {% block content %}
     <!-- contenuto qui -->
-
-
+<div id="modal-restituisci" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="chiudiDialogRestituisci()">&times;</span>
+            <h2>Conferma eliminazione revisione</h2>
+            <p id="testo-restituisci"></p>
+            <form id="form-restituisci" method="POST" action="">
+                <input type="hidden" name="table" id="modal-table" value="">
+                <input type="hidden" name="id" id="modal-id" value="">
+                <button type="submit" class="btn-delete">Conferma</button>
+                <button type="button" class="btn-cancel" onclick="chiudiDialogRestituisci()">Annulla</button>
+            </form>
+        </div>
+    </div>
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -89,12 +100,10 @@
                                 <td class="crud-options">
                                     <a href="{% url 'dettaglio_record' 'revisione' rev.numero %}" class="view">Visualizza</a>
                                     <a href="{% url 'modifica' 'revisione' rev.numero %}" class="edit">Modifica</a>
-                                    <form action="" method="POST" style="display:inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questa revisione?');">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="table" value="revisione">
-                                        <input type="hidden" name="id" value="{{ rev.numero }}">
-                                        <button type="submit" class="delete">Elimina</button>
-                                    </form>
+                                    <a href="#" class="delete"
+                                onclick="apriDialogDelete('targa', '{{ targa.numero|escapejs }}'); return false;">
+                                Elimina
+                               </a>
                                 </td>
                             </tr>
                             {% endfor %}
