@@ -1,122 +1,103 @@
-<!-- templates/revisione.html -->
 {% extends "base.html" %}
 {% load static %}
 
 {% block content %}
-    <!-- contenuto qui -->
-<div id="modal-restituisci" class="modal" style="display:none;">
-        <div class="modal-content">
-            <span class="close" onclick="chiudiDialogRestituisci()">&times;</span>
-            <h2>Conferma eliminazione revisione</h2>
-            <p id="testo-restituisci"></p>
-            <form id="form-restituisci" method="POST" action="">
-                <input type="hidden" name="table" id="modal-table" value="">
-                <input type="hidden" name="id" id="modal-id" value="">
-                <button type="submit" class="btn-delete">Conferma</button>
-                <button type="button" class="btn-cancel" onclick="chiudiDialogRestituisci()">Annulla</button>
-            </form>
-        </div>
+  <!-- Modale elimina revisione -->
+  <div id="modal-restituisci" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close" onclick="chiudiDialogRestituisci()">&times;</span>
+      <h2>Conferma eliminazione revisione</h2>
+      <p id="testo-restituisci"></p>
+      <form id="form-restituisci" method="POST" action="">
+        {% csrf_token %}
+        <input type="hidden" name="table" id="modal-table" value="revisione">
+        <input type="hidden" name="id" id="modal-id" value="">
+        <button type="submit" class="btn-delete">Conferma</button>
+        <button type="button" class="btn-cancel" onclick="chiudiDialogRestituisci()">Annulla</button>
+      </form>
     </div>
-<html lang="it">
+  </div>
 
-<body>
-    
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
+  <!-- Messaggi -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="message {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
 
-            <div class="header-bar">
-                <h2>Gestione Revisioni</h2>
-                <a href="" class="btn-add">Aggiungi Nuova Revisione</a>
-            </div>
-            
-            {% if revisioni.exists %}
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-<th>
-    <a href="?sort=numero&dir={% if sort == 'numero' and dir == 'asc' %}desc{% else %}asc{% endif %}">
-        ID
-        {% if sort == 'numero' %}
-            {% if dir == 'asc' %}↑{% else %}↓{% endif %}
-        {% else %}
-            ↑↓
-        {% endif %}
-    </a>
-<th>
-    <a href="?sort=targaNumero__numero&dir={% if sort == 'targaNumero__numero' and dir == 'asc' %}desc{% else %}asc{% endif %}">
-        Targa
-        {% if sort == 'targaNumero__numero' %}
-            {% if dir == 'asc' %}↑{% else %}↓{% endif %}
-        {% else %}
-            ↑↓
-        {% endif %}
-    </a>
-</th>
-<th>
-    <a href="?sort=dataRev&dir={% if sort == 'dataRev' and dir == 'asc' %}desc{% else %}asc{% endif %}">
-        Data Revisione
-        {% if sort == 'dataRev' %}
-            {% if dir == 'asc' %}↑{% else %}↓{% endif %}
-        {% else %}
-            ↑↓
-        {% endif %}
-    </a>
-</th>
-                                <th>Esito</th>
-                                <th>Azioni</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for rev in revisioni %}
-                            <tr>
-                                <td>{{ rev.numero }}</td>
-                                <td><a href="{% url 'dettaglio_record' 'targa' rev.targaNumero.numero %}" class="targa-link">{{ rev.targaNumero.numero }}</a></td>
-                                <td>{{ rev.dataRev }}</td>
-                                <td>
-                                    {% if rev.esito == 'Superata' %}
-                                        Superata
-                                    {% elif rev.esito == 'Non superata' %}
-                                        Non superata
-                                    {% else %}
-                                        In attesa di esito
-                                    {% endif %}
-                                </td>
-                                <td class="crud-options">
-                                    <a href="{% url 'dettaglio_record' 'revisione' rev.numero %}" class="view">Visualizza</a>
-                                    <a href="{% url 'modifica' 'revisione' rev.numero %}" class="edit">Modifica</a>
-                                    <a href="#" class="delete"
-                                onclick="apriDialogDelete('revisione', '{{ revisione.numero|escapejs }}'); return false;">
-                                Elimina
-                               </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <p>Nessuna revisione trovata.</p>
-            {% endif %}
-        </div>
+  <!-- Header -->
+  <div class="header-bar">
+    <h2>Gestione Revisioni</h2>
+    <a href="{% url 'create' %}" class="btn-add">Aggiungi Nuova Revisione</a>
+  </div>
 
-    
-    <script src="{% static 'function.js' %}"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            hideMessageAfterDelay(); // sparisce dopo 4s
-        });
-    </script>
-</body>
-</html>
+  <!-- Tabella revisioni -->
+  {% if revisioni.exists %}
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>
+              <a href="?sort=numero&dir={% if sort == 'numero' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                ID {% if sort == 'numero' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
+              </a>
+            </th>
+            <th>
+              <a href="?sort=targaNumero__numero&dir={% if sort == 'targaNumero__numero' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                Targa {% if sort == 'targaNumero__numero' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
+              </a>
+            </th>
+            <th>
+              <a href="?sort=dataRev&dir={% if sort == 'dataRev' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                Data Revisione {% if sort == 'dataRev' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
+              </a>
+            </th>
+            <th>Esito</th>
+            <th>Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rev in revisioni %}
+            <tr>
+              <td>{{ rev.numero }}</td>
+              <td>
+                <a href="{% url 'dettaglio_record' 'targa' rev.targaNumero.numero %}" class="targa-link">
+                  {{ rev.targaNumero.numero }}
+                </a>
+              </td>
+              <td>{{ rev.dataRev }}</td>
+              <td>
+                {% if rev.esito == 'Superata' %}
+                  Superata
+                {% elif rev.esito == 'Non superata' %}
+                  Non superata
+                {% else %}
+                  In attesa di esito
+                {% endif %}
+              </td>
+              <td class="crud-options">
+                <a href="{% url 'dettaglio_record' 'revisione' rev.numero %}" class="view">Visualizza</a>
+                <a href="{% url 'modifica' 'revisione' rev.numero %}" class="edit">Modifica</a>
+                <a href="#"
+                   class="delete"
+                   onclick="apriDialogDelete('revisione', '{{ rev.numero|escapejs }}'); return false;">
+                  Elimina
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p>Nessuna revisione trovata.</p>
+  {% endif %}
+
+  <!-- Script per modali e grafici -->
+  <script src="{% static 'function.js' %}"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      hideMessageAfterDelay();
+    });
+  </script>
 {% endblock %}

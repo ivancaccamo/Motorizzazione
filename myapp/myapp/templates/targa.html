@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block content %}
+
 <div id="modal-restituisci" class="modal" style="display:none;">
     <div class="modal-content">
         <span class="close" onclick="chiudiDialogRestituisci()">&times;</span>
@@ -89,10 +90,6 @@
             <p>Nessuna targa trovata.</p>
         {% endif %}
     </div>
-
-{% endblock %}
-
-{% block extra_js %}
 <script src="{% static 'function.js' %}"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
