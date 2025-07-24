@@ -127,7 +127,7 @@ def dettagli_record(request, table, id):
         revisione = get_object_or_404(Revisione, pk=id)
         data = revisione
 
-    return render(request, 'dettagli.html', {
+    return render(request, 'read.html', {
         'table': table,
         'id': id,
         'data': data,

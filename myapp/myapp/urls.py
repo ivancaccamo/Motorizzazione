@@ -29,7 +29,7 @@ path('', myController.home, name='home'),
 path('read/', myController.dettagli_record, name='dettaglio_record'),
 path('modifica/<str:table>/<str:id>/', myController.modifica, name='modifica'),
 path('dettagli/<str:table>/<str:id>/', myController.dettagli_record, name='dettaglio_record'),
-path('targhe/<str:numero>/',myController.dettagli_record,name='dettaglio_record'),
+#path('targhe/<str:numero>/',myController.dettagli_record,name='dettaglio_record'),
 path(
         'targhe/<str:numero>/modifica/',
         myController.modifica,           # o chiami un wrapper se serve
@@ -38,4 +38,6 @@ path(
 #path('read/', myController.read, name='read'),
 #path('update/', myController.update, name='update')
  ]
+
+
 

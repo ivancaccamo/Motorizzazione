@@ -29,7 +29,7 @@
                                 <td>{{ t.targaNumero.numero }}</td>
                                 <td>{{ t.targaNumero.dataEm }}</td>
                                 <td>
-                                    <a href="{% url 'dettagli_record' 'targa' t.targaNumero.numero %}" class="view">Visualizza</a>
+                                    <a href="{% url 'dettaglio_record' 'targa' t.targaNumero.numero %}" class="view">Visualizza</a>
                                     <form method="post" style="display:inline;">
                                         {% csrf_token %}
                                         <input type="hidden" name="targa_numero" value="{{ t.targaNumero.numero }}">
@@ -55,7 +55,7 @@
                                 <td>{{ t.targaNumero.dataEm }}</td>
                                 <td>{{ t.dataRes }}</td>
                                 <td>
-                                    <a href="{% url 'dettagli_record' 'targa' t.targaNumero.numero %}" class="view">Visualizza</a>
+                                    <a href="{% url 'dettaglio_record' 'targa' t.targaNumero.numero %}" class="view">Visualizza</a>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -82,7 +82,7 @@
                             <td>{{ related.veicolo.telaio }}</td>
                             <td>{{ related.veicolo.marca }}</td>
                             <td>{{ related.veicolo.modello }}</td>
-                            <td><a href="{% url 'dettagli_record' 'veicolo' related.veicolo.telaio %}" class="view">Visualizza</a></td>
+                            <td><a href="{% url 'dettaglio_record' 'veicolo' related.veicolo.telaio %}" class="view">Visualizza</a></td>
                         </tr>
                     </tbody>
                 </table>
@@ -101,7 +101,7 @@
                                 <td>{{ r.dataRev }}</td>
                                 <td>{{ r.esito }}</td>
                                 <td>{{ r.motivazione }}</td>
-                                <td><a href="{% url 'dettagli_record' 'revisione' r.numero %}" class="view">Visualizza</a></td>
+                                <td><a href="{% url 'dettaglio_record' 'revisione' r.numero %}" class="view">Visualizza</a></td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -125,7 +125,13 @@
 
         <div class="actions">
             <a href="{% url 'modifica' table id %}" class="btn-primary">Modifica</a>
-            <a href="{% url 'gestione_'|add:table %}" class="btn-cancel">Torna indietro</a>
+            {% if table == 'veicolo' %}
+                <a href="{% url 'gestione_veicoli' %}" class="btn-cancel">Torna indietro</a>
+            {% elif table == 'targa' %}
+                <a href="{% url 'gestione_targhe' %}" class="btn-cancel">Torna indietro</a>
+            {% elif table == 'revisione' %}
+                <a href="{% url 'gestione_revisioni' %}" class="btn-cancel">Torna indietro</a>
+            {% endif %}
         </div>
 
     {% else %}

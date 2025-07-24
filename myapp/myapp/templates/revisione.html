@@ -87,7 +87,7 @@
                                     {% endif %}
                                 </td>
                                 <td class="crud-options">
-                                    <a href="{% url 'dettaglio_record' rev.numero %}" class="view">Visualizza</a>
+                                    <a href="{% url 'dettaglio_record' 'revisione' rev.numero %}" class="view">Visualizza</a>
                                     <a href="{% url 'modifica' 'revisione' rev.numero %}" class="edit">Modifica</a>
                                     <form action="" method="POST" style="display:inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questa revisione?');">
                                         {% csrf_token %}
