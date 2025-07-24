@@ -75,7 +75,7 @@
                             {% for rev in revisioni %}
                             <tr>
                                 <td>{{ rev.numero }}</td>
-                                <td><a href="{% url 'dettaglio_targa' rev.targaNumero.numero %}">{{ rev.targaNumero.numero }}</a></td>
+                                <td><a href="{% url 'dettaglio_record' 'targa' rev.targaNumero.numero %}">{{ rev.targaNumero.numero }}</a></td>
                                 <td>{{ rev.dataRev }}</td>
                                 <td>
                                     {% if rev.esito == 'Superata' %}
@@ -87,8 +87,8 @@
                                     {% endif %}
                                 </td>
                                 <td class="crud-options">
-                                    <a href="{% url 'dettaglio_revisione' rev.numero %}" class="view">Visualizza</a>
-                                    <a href="{% url 'modifica_revisione' rev.numero %}" class="edit">Modifica</a>
+                                    <a href="{% url 'dettaglio_record' rev.numero %}" class="view">Visualizza</a>
+                                    <a href="{% url 'modifica' 'revisione' rev.numero %}" class="edit">Modifica</a>
                                     <form action="" method="POST" style="display:inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questa revisione?');">
                                         {% csrf_token %}
                                         <input type="hidden" name="table" value="revisione">

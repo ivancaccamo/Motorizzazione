@@ -55,8 +55,8 @@
                                 <td>{{ v.modello }}</td>
                                 <td>{{ v.data_produzione }}</td>
                                 <td class="crud-options">
-                                    <a href="{% url 'dettaglio_veicolo' v.telaio %}" class="view">Visualizza</a>
-                                    <a href="{% url 'modifica_veicolo' v.telaio %}" class="edit">Modifica</a>
+                                    <a href="{% url 'dettaglio_record' 'veicolo' v.telaio %}" class="view">Visualizza</a>
+                                    <a href="{% url 'modifica' 'veicolo' v.telaio %}" class="edit">Modifica</a>
                                     <form method="post" style="display:inline;" onsubmit="return confirm('Sei sicuro di voler eliminare questo veicolo?');">
                                         {% csrf_token %}
                                         <input type="hidden" name="table" value="veicolo">

@@ -26,11 +26,15 @@ path('targhe/', myController.gestioneTarghe, name='gestione_targhe'),
 path('veicoli/', myController.gestioneVeicoli, name='gestione_veicoli'),
 path('revisioni/crea/', myController.create, name='crea_revisione'),
 path('', myController.home, name='home'),
-path('read/', myController.dettagli_record, name='dettagli_record'),
+path('read/', myController.dettagli_record, name='dettaglio_record'),
 path('modifica/<str:table>/<str:id>/', myController.modifica, name='modifica'),
-path('dettagli/<str:table>/<str:id>/', myController.dettagli_record, name='dettagli_record'),
-
-
+path('dettagli/<str:table>/<str:id>/', myController.dettagli_record, name='dettaglio_record'),
+path('targhe/<str:numero>/',myController.dettagli_record,name='dettaglio_record'),
+path(
+        'targhe/<str:numero>/modifica/',
+        myController.modifica,           # o chiami un wrapper se serve
+        name='modifica_targa'
+    ),
 #path('read/', myController.read, name='read'),
 #path('update/', myController.update, name='update')
  ]
