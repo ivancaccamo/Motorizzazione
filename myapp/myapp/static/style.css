@@ -632,6 +632,15 @@ th {
     text-align: left;
 }
 
+th a,
+    th a:link,
+    th a:visited,
+    th a:hover,
+    th a:active {
+        color: white !important;
+        text-decoration: none !important;
+    }
+
 thead {
     border-radius: 6px;
     position: sticky;
