@@ -436,35 +436,35 @@ p{
 }
 
 /* Read page specific */
-.read-page .actions {
+.actions {
     display: flex;
     gap: 10px;
     margin-top: 30px;
 }
 
-.read-page .actions a.btn {
+.actions a.btn {
     padding: 8px 14px;
     min-width: 120px;
     text-align: center;
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.read-page .actions a.btn:hover {
+.actions a.btn:hover {
     opacity: 0.85;
     transform: translateY(-1px);
 }
 
-.read-page .actions a.btn.delete {
+.actions a.btn.delete {
     background-color: #dc3545;
     color: #fff;
 }
 
-.read-page .actions a.btn.first-of-type {
+.actions a.btn.first-of-type {
     background-color: #4a90e2;
     color: #fff;
 }
 
-.read-page .actions a.btn.last-of-type {
+.actions a.btn.last-of-type {
     background-color: #6c757d;
     color: #fff;
 }
@@ -492,7 +492,7 @@ p{
     padding-right: 10px;
 }
 
-.read-page .content p {
+.content .read-page p {
     background: #f1f5f9;
     padding: 15px;
     border: 1px solid #e2e8f0;

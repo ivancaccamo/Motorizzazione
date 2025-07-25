@@ -84,7 +84,12 @@
                 </table>
               </div>
             {% else %}
-              <p>Nessuna targa attiva.</p>
+              <div class="read-page">
+                
+                  <p>Nessuna targa attiva.</p>
+                
+              </div>
+              
             {% endif %}
 
             <h3>Targhe Restituite</h3>
@@ -109,7 +114,10 @@
                 </table>
               </div>
             {% else %}
-              <p>Nessuna targa restituita.</p>
+            <div class="read-page">
+                <p>Nessuna targa restituita.</p>
+              </div>
+             
             {% endif %}
 
             <div class="actions" style="margin-top: 40px;">
@@ -167,7 +175,11 @@
       {% else %}
         <h3>Targa restituita</h3>
         <div class="table-container mb-4">
-          <p>Data Restituzione: {{ related.restituzione.data_restituzione|date:"Y-m-d" }}</p>
+          <div class="read-page">
+
+                 <p>Data Restituzione: {{ related.restituzione.data_restituzione|date:"Y-m-d" }}</p>
+              </div>
+         
         </div>
       {% endif %}
 
@@ -203,7 +215,12 @@
   </div>
 {% else %}
   <div class="table-container mb-4">
-    <p>Nessuna revisione associata.</p>
+    
+    <div class="read-page">
+               
+                  <p>Nessuna revisione associata</p>
+                
+              </div>
   </div>
 {% endif %}
 
@@ -245,7 +262,11 @@
       {% endif %}
 
       {% if not data %}
-        <p>Record non trovato.</p>
+         <div class="read-page">
+                
+                  <p>nessun record trovato.</p>
+                
+              </div>
       {% endif %}
     </div>
     
