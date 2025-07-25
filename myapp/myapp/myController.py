@@ -332,7 +332,7 @@ def gestioneTarghe(request):
         targhe = targhe.filter(numero__icontains=request.GET['numero'])
 
     if 'dataEm' in request.GET and request.GET['dataEm']:
-        targhe = targhe.filter(dataem=request.GET['dataEm'])
+        targhe = targhe.filter(dataEm=request.GET['dataEm'])
 
     if 'statoTarga' in request.GET and request.GET['statoTarga']:
         stato = request.GET['statoTarga']
