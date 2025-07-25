@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse
 from django.db.models import Q
 from django.contrib import messages
 from django.urls import reverse
@@ -68,22 +68,42 @@ def modifica(request, table, id):
                     if nuovo_numero != id and Targa.objects.filter(numero=nuovo_numero).exists():
                         messages.error(request, f"Targa '{escape(nuovo_numero)}' già presente.")
                     else:
+                        # Aggiorno la data di emissione
                         obj.dataEm = request.POST.get('dataEm')
 
+                        # Se il numero è cambiato, devo gestire la modifica della PK
                         if nuovo_numero != id:
+                            # Prima aggiorno tutte le relazioni FK
                             Revisione.objects.filter(targaNumero=id).update(targaNumero=nuovo_numero)
                             Attiva.objects.filter(targaNumero=id).update(targaNumero=nuovo_numero)
                             Restituita.objects.filter(targaNumero=id).update(targaNumero=nuovo_numero)
-                            obj.numero = nuovo_numero
+                            
+                            # Ottengo tutti i valori del vecchio oggetto
+                            old_values = {}
+                            for field in obj._meta.fields:
+                                if field.name != 'numero':  # Escludo il campo che sto cambiando
+                                    old_values[field.name] = getattr(obj, field.name)
+                            
+                            # Creo un nuovo oggetto copiando tutti i campi
+                            nuovo_obj = Targa(numero=nuovo_numero, **old_values)
+                            nuovo_obj.save()
+                            
+                            # Elimino il vecchio oggetto
+                            obj.delete()
+                            
+                            # Aggiorno il riferimento per il redirect
+                            obj = nuovo_obj
+                        else:
+                            # Se il numero non è cambiato, salvo normalmente
+                            obj.save()
 
-                        obj.save()
                         messages.success(request, "Targa aggiornata con successo.")
                         return redirect('dettaglio_record', table='targa', id=obj.numero)
 
                 elif table == 'revisione':
                     obj.dataRev     = request.POST.get('dataRev')
                     obj.esito       = request.POST.get('esito')
-                    # solo se “Non superata” prendo la motivazione
+                    # solo se "Non superata" prendo la motivazione
                     if obj.esito == 'Non superata':
                         obj.motivazione = request.POST.get('motivazione', '').strip()
                     else:
@@ -96,7 +116,6 @@ def modifica(request, table, id):
             messages.error(request, f"Errore durante la modifica: {e}")
 
     return render(request, 'modifica.html', context)
-
 def dettagli_record(request, table, id):
     message = ''
     data = {}

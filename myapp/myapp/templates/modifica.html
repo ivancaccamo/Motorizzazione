@@ -75,47 +75,62 @@
       <a href="{% url 'gestione_targhe' %}" class="btn-cancel">Annulla</a>
     </form>
 
-  {% elif table == 'revisione' %}
-    <form method="post">{% csrf_token %}
-
-
+{% elif table == 'revisione' %}
+<form method="post">
+    {% csrf_token %}
+    
     <div class="form-group">
-      <label>
-      ID:<input type="text" name="id" value="{{ revisione.numero }}" required>
-    </div></label>
-    <div class="form-group">
-      
-      <label>
-        Targa:<input type="text" name="id" value="{{ revisione.targaNumero }}" required>
-      </label>
+        <label for="numero">ID:</label>
+        <input type="text" id="numero" name="numero" value="{{ revisione.numero }}" readonly>
     </div>
+    
     <div class="form-group">
-     <label> Data Revisione:</label><input type="date" name="dataRev" value="{{ revisione.dataRev|date:'Y-m-d' }}" required>
+        <label for="targa">Targa:</label>
+        <input type="text" id="targa" name="targa" value="{{ revisione.targaNumero }}" readonly>
     </div>
+    
     <div class="form-group">
-      <label>Esito:</label>
+        <label for="dataRev">Data Revisione:</label>
+        <input type="date" id="dataRev" name="dataRev" value="{{ revisione.dataRev|date:'Y-m-d' }}" required>
     </div>
-      <div class="form-group">
-      <select name="esito" onchange="toggleMotivazione(this)">
-        <option value="superata" {% if revisione.esito == 'superata' %}selected{% endif %}>Superata</option>
-        <option value="Non superata" {% if revisione.esito == 'Non superata' %}selected{% endif %}>Non superata</option>
-      </select>
-      </div>
-      <div id="motivazioneDiv" style="display: {% if revisione.esito == 'Non superata' %}block{% else %}none{% endif %};">
-        <label>Motivazione:</label>
-        <textarea name="motivazione">{{ revisione.motivazione }}</textarea>
-      </div>
-      <button type="submit" class="btn-primary">Salva</button>
-      <a href="{% url 'gestione_revisioni' %}" class="btn-cancel">Annulla</a>
-    </form>
-  {% endif %}
+    
+    <div class="form-group">
+        <label for="esito">Esito:</label>
+        <select id="esito" name="esito" onchange="toggleMotivazione(this)">
+            <option value="superata" {% if revisione.esito == 'superata' %}selected{% endif %}>Superata</option>
+            <option value="Non superata" {% if revisione.esito == 'Non superata' %}selected{% endif %}>Non superata</option>
+        </select>
+    </div>
+    
+    <div id="motivazioneDiv" style="display: {% if revisione.esito == 'Non superata' %}block{% else %}none{% endif %};">
+        <div class="form-group">
+            <label for="motivazione">Motivazione:</label>
+            <textarea id="motivazione" name="motivazione"placeholder="Inserisci la motivazione per il mancato superamento...">{{ revisione.motivazione }}</textarea>
+        </div>
+    </div>
+    
+    <button type="submit" class="btn-primary">Salva</button>
+    <a href="{% url 'gestione_revisioni' %}" class="btn-cancel">Annulla</a>
+</form>
+{% endif %}
 {% endblock %}
-
 {% block extra_js %}
 <script>
 function toggleMotivazione(sel) {
     const div = document.getElementById('motivazioneDiv');
-    div.style.display = sel.value === 'Non superata' ? 'block' : 'none';
+    if (sel.value === 'Non superata') {
+        div.style.display = 'block';
+    } else {
+        div.style.display = 'nessuna motivazione';
+    }
 }
+
+// Inizializza lo stato al caricamento della pagina
+document.addEventListener('DOMContentLoaded', function() {
+    const esitoSelect = document.getElementById('esito');
+    if (esitoSelect) {
+        toggleMotivazione(esitoSelect);
+    }
+});
 </script>
 {% endblock %}
