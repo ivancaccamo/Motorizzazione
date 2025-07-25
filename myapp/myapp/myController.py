@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.db.models import Q
 from django.contrib import messages
 from django.urls import reverse
@@ -9,6 +9,9 @@ from .models import Targa, Attiva, Restituita,Veicolo, Revisione
 from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
+from django.utils.html import escape
+import re
+from datetime import date
 
 
 def modifica(request, table, id):
@@ -39,7 +42,7 @@ def modifica(request, table, id):
                     else:
                         obj.marca = request.POST.get('marca')
                         obj.modello = request.POST.get('modello')
-                        obj.dataProd = request.POST.get('dataProd')
+                        obj.data_produzione = request.POST.get('data_produzione')
                         if nuovo_telaio != id:
                             Attiva.objects.filter(veicoloTelaio=id).update(veicoloTelaio=nuovo_telaio)
                             Restituita.objects.filter(veicoloTelaio=id).update(veicoloTelaio=nuovo_telaio)
@@ -236,7 +239,7 @@ def create(request):
                         telaio=telaio,
                         marca=request.POST['marca'],
                         modello=request.POST['modello'],
-                        dataProd=request.POST['dataProd']
+                        data_produzione=request.POST['data_produzione']
                     )
                     message = "Veicolo aggiunto con successo."
                     success = True
