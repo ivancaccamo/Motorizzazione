@@ -15,68 +15,86 @@ from datetime import date
 
 
 def modifica(request, table, id):
+    # Pre-caricamento oggetto e contest
     context = {'table': table}
-    
-    # Pre-caricamento dati
     if table == 'veicolo':
         obj = get_object_or_404(Veicolo, telaio=id)
         context['veicolo'] = obj
+
     elif table == 'targa':
         obj = get_object_or_404(Targa, numero=id)
         context['targa'] = obj
+
     elif table == 'revisione':
         obj = get_object_or_404(Revisione, numero=id)
         context['revisione'] = obj
+
     else:
         messages.error(request, "Operazione non supportata.")
         return redirect('home')
 
-    # Gestione POST
+    # Se POST, elaboro la modifica
     if request.method == 'POST':
         try:
             with transaction.atomic():
                 if table == 'veicolo':
-                    nuovo_telaio = request.POST.get('telaio_hidden')
+                    # ricompongo il telaio da tutti i singoli input
+                    lista = request.POST.getlist('telaio[]')
+                    nuovo_telaio = ''.join(lista).upper()
+
+                    # controllo unicità
                     if nuovo_telaio != id and Veicolo.objects.filter(telaio=nuovo_telaio).exists():
                         messages.error(request, f"Telaio '{escape(nuovo_telaio)}' già presente.")
                     else:
-                        obj.marca = request.POST.get('marca')
-                        obj.modello = request.POST.get('modello')
-                        obj.data_produzione = request.POST.get('data_produzione')
+                        # salvo gli altri campi
+                        obj.marca    = request.POST.get('marca').strip()
+                        obj.modello  = request.POST.get('modello').strip()
+                        obj.data_produzione = request.POST.get('dataProd')
+
+                        # se è cambiato il telaio, aggiorno anche le FK nelle relazioni
                         if nuovo_telaio != id:
                             Attiva.objects.filter(veicoloTelaio=id).update(veicoloTelaio=nuovo_telaio)
                             Restituita.objects.filter(veicoloTelaio=id).update(veicoloTelaio=nuovo_telaio)
                             obj.telaio = nuovo_telaio
+
                         obj.save()
                         messages.success(request, "Veicolo aggiornato con successo.")
-                        return redirect('dettagli_record', table='veicolo', id=obj.telaio)
+                        return redirect('dettaglio_record', table='veicolo', id=obj.telaio)
 
                 elif table == 'targa':
-                    nuovo_numero = request.POST.get('numero_hidden')
+                    lista = request.POST.getlist('targa[]')
+                    nuovo_numero = ''.join(lista).upper()
+
                     if nuovo_numero != id and Targa.objects.filter(numero=nuovo_numero).exists():
                         messages.error(request, f"Targa '{escape(nuovo_numero)}' già presente.")
                     else:
                         obj.dataEm = request.POST.get('dataEm')
+
                         if nuovo_numero != id:
                             Revisione.objects.filter(targaNumero=id).update(targaNumero=nuovo_numero)
                             Attiva.objects.filter(targaNumero=id).update(targaNumero=nuovo_numero)
                             Restituita.objects.filter(targaNumero=id).update(targaNumero=nuovo_numero)
                             obj.numero = nuovo_numero
+
                         obj.save()
                         messages.success(request, "Targa aggiornata con successo.")
-                        return redirect('dettagli_record', table='targa', id=obj.numero)
+                        return redirect('dettaglio_record', table='targa', id=obj.numero)
 
                 elif table == 'revisione':
-                    obj.dataRev = request.POST.get('dataRev')
-                    obj.esito = request.POST.get('esito')
-                    obj.motivazione = request.POST.get('motivazione') if obj.esito == 'Non superata' else ''
+                    obj.dataRev     = request.POST.get('dataRev')
+                    obj.esito       = request.POST.get('esito')
+                    # solo se “Non superata” prendo la motivazione
+                    if obj.esito == 'Non superata':
+                        obj.motivazione = request.POST.get('motivazione', '').strip()
+                    else:
+                        obj.motivazione = ''
                     obj.save()
                     messages.success(request, "Revisione aggiornata con successo.")
-                    return redirect('dettagli_record', table='revisione', id=obj.numero)
+                    return redirect('dettaglio_record', table='revisione', id=obj.numero)
 
         except Exception as e:
             messages.error(request, f"Errore durante la modifica: {e}")
-    
+
     return render(request, 'modifica.html', context)
 
 def dettagli_record(request, table, id):
@@ -239,7 +257,7 @@ def create(request):
                         telaio=telaio,
                         marca=request.POST['marca'],
                         modello=request.POST['modello'],
-                        data_produzione=request.POST['data_produzione']
+                        data_produzione=request.POST['dataProd']
                     )
                     message = "Veicolo aggiunto con successo."
                     success = True
