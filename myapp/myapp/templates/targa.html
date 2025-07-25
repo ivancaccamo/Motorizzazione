@@ -30,7 +30,7 @@
 
         <div class="header-bar">
             <h2>Gestione Targhe</h2>
-            <a href="{% url 'create' %}" class="btn-add">Aggiungi Nuova Targa</a>
+            <a href="{% url 'create'%}?table=targa" class="btn-add">Aggiungi Nuova Targa</a>
         </div>
         
         {% if targhe.exists %}

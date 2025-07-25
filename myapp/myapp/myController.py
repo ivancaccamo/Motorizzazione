@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.db.models import Q
 from django.contrib import messages
 from django.urls import reverse
@@ -259,7 +259,8 @@ def gestioneRevisione(request):
 # ---------------------------- CREATE GENERICO ----------------------------
 
 def create(request):
-    table = request.GET.get('table')
+    # Prova prima da POST (quando si invia il form), poi da GET (primo caricamento)
+    table = request.POST.get('table') or request.GET.get('table')
     message = ''
     success = False
 
@@ -317,7 +318,11 @@ def create(request):
                 message = f"Errore: {str(e)}"
 
         else:
-            return HttpResponseBadRequest("Tipo non supportato.")
+            return HttpResponseBadRequest(f"Tipo non supportato: {table}")
+
+    # Se table è ancora None, mostra errore
+    if not table:
+        return HttpResponseBadRequest("Parametro 'table' mancante. Usa ?table=veicolo, ?table=targa, o ?table=revisione nell'URL.")
 
     context = {'table': table, 'message': message, 'success': success}
 

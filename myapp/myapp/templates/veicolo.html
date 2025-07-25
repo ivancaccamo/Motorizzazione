@@ -28,7 +28,7 @@
 
         <div class="header-bar">
             <h2>Gestione Veicoli</h2>
-            <a href="{% url 'create' %}" class="btn-add">Aggiungi Nuovo Veicolo</a>
+            <a href="{% url 'create'%}?table=veicolo" class="btn-add">Aggiungi Nuovo Veicolo</a>
         </div>
        
         {% if veicoli.exists %}
