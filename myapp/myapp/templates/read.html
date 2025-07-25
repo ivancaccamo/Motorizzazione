@@ -1,183 +1,170 @@
 {% extends 'base.html' %}
 {% load static %}
 
+
 {% block content %}
-  {# Questo wrapper riprende il background azzurro di body #}
-  <div class="container">
+  <style>
+    /* Annulla width, sfondo, ombra ed attiva il flex centering */
+    .container > .content {
+      width: auto          !important;
+      background: none     !important;
+      box-shadow: none     !important;
 
-    {# Questo è il blocco bianco, centrato e con ombra #}
-     <div class="mx-auto mb-5" style="
-         width: 100%;
-         max-width: 800px; 
-         background-color: #fff;
-         border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          padding: 20px;">
+      display: flex        !important;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
 
+      padding: 0           !important;
+    }
+  </style>
+
+  <div style="width:50%; min-height:73vh; padding:20px; background:#fff; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
       {% if message %}
         <div class="message {% if 'successo' in message %}success{% else %}error{% endif %}">
           {{ message }}
         </div>
       {% endif %}
-      {% if data %}
-        {% if table == 'veicolo' %}
-          <h2>Dettagli Veicolo</h2>
 
-          {# card piccola centrata #}
-          <div class="card-custom d-block  mx-auto mb-4" style="max-width: 350px;">
-            <dl>
-              <dt>Telaio</dt><dd>{{ data.telaio }}</dd>
-              <dt>Marca</dt><dd>{{ data.marca }}</dd>
-              <dt>Modello</dt><dd>{{ data.modello }}</dd>
-              <dt>Data Produzione</dt><dd>{{ data.dataProd }}</dd>
-            </dl>
+      {% if data and table == 'veicolo' %}
+        <div class="d-flex flex-wrap">
+          {# ——— colonna sinistra: card dettagli ——— #}
+          <div style="flex:0 0 300px; margin-right:20px;">
+            <h2>Dettagli Veicolo</h2>
+            <div class="card-custom mb-4">
+              <dl>
+                <dt>Telaio</dt><dd>{{ data.telaio }}</dd>
+                <dt>Marca</dt><dd>{{ data.marca }}</dd>
+                <dt>Modello</dt><dd>{{ data.modello }}</dd>
+                <dt>Data Produzione</dt><dd>{{ data.dataProd }}</dd>
+              </dl>
+            </div>
           </div>
 
-          <h3 class="mt-4">Targhe Attive</h3>
-          {% if related.attive %}
-            <div class="table-container mb-4">
-              <table>
-                <thead>
-                  <tr><th>Numero</th><th>Data Emissione</th><th>Azioni</th></tr>
-                </thead>
-                <tbody>
-                  {% for t in related.attive %}
-                    <tr>
-                      <td>{{ t.targaNumero.numero }}</td>
-                      <td>{{ t.targaNumero.dataEm }}</td>
-                      <td class="crud-options">
-                        <a href="{% url 'dettaglio_record' 'targa' t.targaNumero.numero %}" class="view">Visualizza</a>
-                        <form method="post" style="display:inline;">
-                          {% csrf_token %}
-                          <input type="hidden" name="targa_numero" value="{{ t.targaNumero.numero }}">
-                          <button type="submit" class="btn-delete">Restituisci</button>
-                        </form>
-                      </td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+          {# ——— colonna destra: targhe & revisioni ——— #}
+          <div style="flex:1 1 0; min-width:300px;">
+            <h3>Targhe Attive</h3>
+            {% if related.attive %}
+              <div class="table-container mb-4">
+                <table>
+                  <thead>
+                    <tr><th>Numero</th><th>Data Emissione</th><th>Azioni</th></tr>
+                  </thead>
+                  <tbody>
+                    {% for t in related.attive %}
+                      <tr>
+                        <td>{{ t.targaNumero.numero }}</td>
+                        <td>{{ t.targaNumero.dataEm }}</td>
+                        <td class="crud-options">
+                          <a href="{% url 'dettaglio_record' 'targa' t.targaNumero.numero %}" class="view">Visualizza</a>
+                          <form method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="targa_numero" value="{{ t.targaNumero.numero }}">
+                            <button type="submit" class="btn-delete">Restituisci</button>
+                          </form>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <p>Nessuna targa attiva.</p>
+            {% endif %}
+
+            <h3>Targhe Restituite</h3>
+            {% if related.restituite %}
+              <div class="table-container mb-4">
+                <table>
+                  <thead>
+                    <tr><th>Numero</th><th>Data Emissione</th><th>Data Restituzione</th><th>Azioni</th></tr>
+                  </thead>
+                  <tbody>
+                    {% for t in related.restituite %}
+                      <tr>
+                        <td>{{ t.targaNumero.numero }}</td>
+                        <td>{{ t.targaNumero.dataEm }}</td>
+                        <td>{{ t.dataRes }}</td>
+                        <td class="crud-options">
+                          <a href="{% url 'dettaglio_record' 'targa' t.targaNumero.numero %}" class="view">Visualizza</a>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <p>Nessuna targa restituita.</p>
+            {% endif %}
+
+            <div class="actions" style="margin-top: 40px;">
+              <a href="{% url 'modifica' 'veicolo' data.telaio %}" class="btn-primary">Modifica</a>
+              <a href="{% url 'gestione_veicoli' %}" class="btn-cancel">Torna indietro</a>
             </div>
-          {% else %}
-            <p>Nessuna targa attiva.</p>
-          {% endif %}
-
-          <h3>Targhe Restituite</h3>
-          {% if related.restituite %}
-            <div class="table-container mb-4">
-              <table>
-                <thead>
-                  <tr><th>Numero</th><th>Data Emissione</th><th>Data Restituzione</th><th>Azioni</th></tr>
-                </thead>
-                <tbody>
-                  {% for t in related.restituite %}
-                    <tr>
-                      <td>{{ t.targaNumero.numero }}</td>
-                      <td>{{ t.targaNumero.dataEm }}</td>
-                      <td>{{ t.dataRes }}</td>
-                      <td class="crud-options">
-                        <a href="{% url 'dettaglio_record' 'targa' t.targaNumero.numero %}" class="view">Visualizza</a>
-                      </td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          {% else %}
-            <p>Nessuna targa restituita.</p>
-          {% endif %}
-
-        {% elif table == 'targa' %}
-          <h2>Dettagli Targa</h2>
-
-          <div class="card-custom mx-auto mb-4" style="max-width: 350px;">
-            <dl>
-              <dt>Numero</dt><dd>{{ data.numero }}</dd>
-              <dt>Data Emissione</dt><dd>{{ data.dataEm }}</dd>
-              <dt>Stato</dt><dd>{{ related.stato }}</dd>
-            </dl>
           </div>
-
-          {% if related.veicolo %}
-            <h3>Veicolo</h3>
-            <div class="table-container mb-4">
-              <table>
-                <thead>
-                  <tr><th>Telaio</th><th>Marca</th><th>Modello</th><th>Azioni</th></tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>{{ related.veicolo.telaio }}</td>
-                    <td>{{ related.veicolo.marca }}</td>
-                    <td>{{ related.veicolo.modello }}</td>
-                    <td class="crud-options">
-                      <a href="{% url 'dettaglio_record' 'veicolo' related.veicolo.telaio %}" class="view">Visualizza</a>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          {% elif related.restituzione %}
-            <p>Data restituzione: {{ related.restituzione.dataRes }}</p>
-          {% endif %}
-
-          <h3>Revisioni</h3>
-          {% if related.revisioni %}
-            <div class="table-container mb-4">
-              <table>
-                <thead>
-                  <tr><th>ID</th><th>Data</th><th>Esito</th><th>Motivazione</th><th>Azioni</th></tr>
-                </thead>
-                <tbody>
-                  {% for r in related.revisioni %}
-                    <tr>
-                      <td>{{ r.numero }}</td>
-                      <td>{{ r.dataRev }}</td>
-                      <td>{{ r.esito }}</td>
-                      <td>{{ r.motivazione }}</td>
-                      <td class="crud-options">
-                        <a href="{% url 'dettaglio_record' 'revisione' r.numero %}" class="view">Visualizza</a>
-                      </td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          {% else %}
-            <p>Nessuna revisione trovata.</p>
-          {% endif %}
-
-        {% elif table == 'revisione' %}
-          <h2>Dettagli Revisione</h2>
-
-          <div class="card-custom mx-auto mb-4" style="max-width: 350px;">
-            <dl>
-              <dt>ID</dt><dd>{{ data.numero }}</dd>
-              <dt>Targa</dt><dd>{{ data.targaNumero.numero }}</dd>
-              <dt>Data Revisione</dt><dd>{{ data.dataRev }}</dd>
-              <dt>Esito</dt><dd>{{ data.esito }}</dd>
-              {% if data.esito == 'Non superata' %}
-                <dt>Motivazione</dt><dd>{{ data.motivazione }}</dd>
-              {% endif %}
-            </dl>
-          </div>
-        {% endif %}
-
-        <div class="actions">
-          <a href="{% url 'modifica' table id %}" class="btn-primary">Modifica</a>
-          {% if table == 'veicolo' %}
-            <a href="{% url 'gestione_veicoli' %}" class="btn-cancel">Torna indietro</a>
-          {% elif table == 'targa' %}
-            <a href="{% url 'gestione_targhe' %}" class="btn-cancel">Torna indietro</a>
-          {% elif table == 'revisione' %}
-            <a href="{% url 'gestione_revisioni' %}" class="btn-cancel">Torna indietro</a>
-          {% endif %}
         </div>
-
-      {% else %}
-        <p>Record non trovato.</p>
       {% endif %}
 
+      {# ——— Qui ripetere la stessa logica per 'targa' e 'revisione', con lo stesso pattern a due colonne ——— #}
+      {% if data and table == 'targa' %}
+        <div class="d-flex flex-wrap">
+          <div style="flex:0 0 300px; margin-right:20px;">
+            <h2>Dettagli Targa</h2>
+            <div class="card-custom mb-4">
+              <dl>
+                <dt>Numero</dt><dd>{{ data.numero }}</dd>
+                <dt>Data Emissione</dt><dd>{{ data.dataEm }}</dd>
+                <dt>Stato</dt><dd>{{ related.stato }}</dd>
+              </dl>
+            </div>
+          </div>
+          <div style="flex:1 1 0; min-width:300px;">
+            {% if related.veicolo %}
+              <h3>Veicolo</h3>
+              <!-- tabella veicolo -->
+            {% else %}
+              <p>Data restituzione: {{ related.restituzione.dataRes }}</p>
+            {% endif %}
+            <h3>Revisioni</h3>
+            <!-- tabella revisioni -->
+            <div class="actions mt-3">
+              <a href="{% url 'modifica' 'targa' data.numero %}" class="btn-primary">Modifica</a>
+              <a href="{% url 'gestione_targhe' %}" class="btn-cancel">Torna indietro</a>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if data and table == 'revisione' %}
+        <div class="d-flex flex-wrap">
+          <div style="flex:0 0 300px; margin-right:20px;">
+            <h2>Dettagli Revisione</h2>
+            <div class="card-custom mb-4">
+              <dl>
+                <dt>ID</dt><dd>{{ data.numero }}</dd>
+                <dt>Targa</dt><dd>{{ data.targaNumero.numero }}</dd>
+                <dt>Data Revisione</dt><dd>{{ data.dataRev }}</dd>
+                <dt>Esito</dt><dd>{{ data.esito }}</dd>
+                {% if data.esito == 'Non superata' %}
+                  <dt>Motivazione</dt><dd>{{ data.motivazione }}</dd>
+                {% endif %}
+              </dl>
+            </div>
+          </div>
+          <div style="flex:1 1 0; min-width:300px;">
+            {# qui non ci sono tabelle correlate, puoi lasciare vuoto o un messaggio #}
+            <div class="actions mt-3">
+              <a href="{% url 'modifica' 'revisione' data.numero %}" class="btn-primary">Modifica</a>
+              <a href="{% url 'gestione_revisioni' %}" class="btn-cancel">Torna indietro</a>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if not data %}
+        <p>Record non trovato.</p>
+      {% endif %}
     </div>
-  </div>
+    
+
 {% endblock %}
