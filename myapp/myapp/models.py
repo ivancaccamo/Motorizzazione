@@ -33,7 +33,7 @@ class Targa(models.Model):
 
     def __str__(self):
         if self.dataEm:
-            return f"{self.numero} (emessa il {self.dataEm:%Y-%m-%d})"
+            return f"{self.numero}"
         return self.numero
 
 
@@ -63,7 +63,7 @@ class Restituita(models.Model):
         verbose_name_plural = "Restituite"
 
     def __str__(self):
-        return f'{self.targaNumero.numero} – {self.veicoloTelaio.telaio} restituita il {self.data_restituzione:%Y-%m-%d}'
+        return f'{self.targaNumero.numero} – {self.veicoloTelaio.telaio}'
     
 
 class Revisione(models.Model):
@@ -87,4 +87,4 @@ class Revisione(models.Model):
         verbose_name_plural = "Revisioni"
 
     def __str__(self):
-        return f"Rev. {self.numero} – {self.targaNumero.numero} del {self.dataRev:%Y-%m-%d}"
+        return f"Rev. {self.numero} – {self.targaNumero.numero}"
