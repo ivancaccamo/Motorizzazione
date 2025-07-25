@@ -267,7 +267,7 @@ def create(request):
     if request.method == 'POST':
         if table == 'veicolo':
             telaio = ''.join(request.POST.getlist('telaio')).upper()
-            if len(telaio) != 17:
+            if len(telaio) != 16:
                 message = "Errore: Il numero di telaio deve contenere esattamente 17 caratteri."
             elif Veicolo.objects.filter(telaio=telaio).exists():
                 message = "Errore: Esiste già un veicolo con questo numero di telaio."

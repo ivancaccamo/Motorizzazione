@@ -42,34 +42,35 @@
             <div class="form-group"><label>Modello:</label><input name="modello" required></div>
             <div class="form-group"><label>Data Produzione:</label><input type="date" name="dataProd" required></div>
 
-        {% elif table == 'targa' %}
-            <div class="form-group">
-                <label>Numero Targa:</label>
-                <div class="targa-wrapper">
-                    {% for i in "0123456" %}
-                    <div class="targa-box">
-                        <input type="text"
-                            maxlength="1"
-                            class="targa-input"
-                            name="targa[]"
-                            value="{{ char }}"
-                            required
-                            oninput="moveFocus(this, {{ forloop.counter0 }}, 'targa')"
-                            onkeydown="moveFocusOnBackspace(event, {{ forloop.counter0 }}, 'targa')">
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="form-group"><label>Data Emissione:</label><input type="date" name="dataEm" required></div>
-            <div class="form-group">
-                <label>Seleziona Veicolo:</label>
-                <select name="veicolo_telaio" required>
-                    <option value="">Seleziona...</option>
-                    {% for v in veicoli_disponibili %}
-                        <option value="{{ v.telaio }}">{{ v.marca }} {{ v.modello }} ({{ v.telaio }})</option>
-                    {% endfor %}
-                </select>
-            </div>
+    <!-- SOSTITUISCI la sezione esistente nel tuo template originale con questo codice -->
+{% elif table == 'targa' %}
+   
+      <div class="form-group">
+        <label>Numero Targa:</label>
+      </div>
+      <div class="targa-wrapper">
+        <!-- Genera 7 campi vuoti invece di usare i caratteri esistenti -->
+        {% for i in "0123456" %}
+          <div class="targa-box">
+            <input type="text"
+                  maxlength="1"
+                  class="targa-input"
+                  name="targa[]"
+                  value=""
+                  required>
+          </div>
+        {% endfor %}
+      </div> 
+      <div class="form-group">
+        <!-- Mantieni il valore originale nel campo hidden per riferimento -->
+        <input type="hidden" id="numero_hidden" name="numero" value="{{ targa.numero }}">
+      </div>
+      <div class="form-group">
+        <label>Data Emissione:</label>
+      </div>
+      <div class="form-group">
+        <input type="date" name="dataEm" value="{{ targa.dataEm|date:'Y-m-d' }}" required>
+      </div>
 
         {% elif table == 'revisione' %}
             <div class="form-group">

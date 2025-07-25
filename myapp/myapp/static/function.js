@@ -30,189 +30,347 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ----- 2) Auto-focus per campi 'telaio[]' e 'targa[]' -----
-  window.moveFocus = (el, idx, field) => {
-    if (el.value.length === el.maxLength) {
-      const nxt = document.getElementsByName(field + '[]')[idx + 1];
-      if (nxt) nxt.focus();
+  // ----- 2) Gestione UNIFICATA input Targa -----
+  const setupTargaInputs = () => {
+    // Cerca prima gli input con classe .targa-input (modifica)
+    let targaInputs = document.querySelectorAll('.targa-input');
+    let numeroHidden = document.getElementById('numero_hidden');
+    
+    // Se non li trova, cerca per name="targa[]" (creazione)
+    if (!targaInputs.length) {
+      targaInputs = document.querySelectorAll('input[name="targa[]"]');
+      numeroHidden = document.getElementById('numero_hidden') || document.querySelector('input[name="numero"]');
     }
-  };
-  window.moveFocusOnBackspace = (e, idx, field) => {
-    const inputs = document.getElementsByName(field + '[]');
-    const cur = inputs[idx];
-    if (e.key === 'Backspace' && cur.selectionStart === 0 && idx > 0) {
-      e.preventDefault();
-      const prev = inputs[idx - 1];
-      prev.focus();
-      prev.setSelectionRange(prev.value.length, prev.value.length);
-      prev.value = prev.value.slice(0, -1);
-      const hidden = document.getElementById(field === 'telaio' ? 'telaio_hidden' : 'numero_hidden');
-      hidden.value = Array.from(inputs).map(c => c.value).join('');
-    }
-  };
 
-  // ----- 3) Toggle motivazione revisione -----
-  const sel = document.getElementById('esito'),
-        divMot = document.getElementById('motivazioneDiv'),
-        ta = document.getElementById('motivazione');
-  if (sel && divMot && ta) {
-    const tog = () => {
-      if (sel.value === 'Non superata') {
-        divMot.style.display = 'block';
-        ta.required = true;
+    if (!targaInputs.length) return;
+
+    // Funzione per validare input targa
+    const validateTargaInput = (input, index) => {
+      let value = input.value.toUpperCase();
+      
+      // Posizioni 0,1,5,6 = lettere, posizioni 2,3,4 = numeri
+      if ([0, 1, 5, 6].includes(index)) {
+        value = value.replace(/[^ABCDEFGHJKLMNPRSTVWXYZ]/g, '');
       } else {
-        divMot.style.display = 'none';
-        ta.required = false;
+        value = value.replace(/[^0-9]/g, '');
+      }
+      
+      return value;
+    };
+
+    // Funzione per aggiornare il campo hidden
+    const updateHiddenField = () => {
+      if (numeroHidden) {
+        numeroHidden.value = Array.from(targaInputs).map(input => input.value).join('');
       }
     };
-    sel.addEventListener('change', tog);
-    tog();
-  }
 
-  // ----- 4) Gestione input Telaio dinamico (modifica veicolo) con autofocus -----
-  const telaioInputs = document.querySelectorAll('.telaio-input'),
-        telaioHidden = document.getElementById('telaio_hidden');
-  if (telaioInputs.length && telaioHidden) {
-    telaioInputs.forEach((inp, i) => {
-      inp.addEventListener('input', () => {
-        inp.value = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-        telaioHidden.value = Array.from(telaioInputs).map(c => c.value).join('');
-        if (inp.value.length === inp.maxLength) {
-          const next = telaioInputs[i + 1];
-          if (next) next.focus();
+    // Funzione per muovere il focus al prossimo campo
+    const moveToNext = (currentIndex) => {
+      if (currentIndex < targaInputs.length - 1) {
+        targaInputs[currentIndex + 1].focus();
+      }
+    };
+
+    // Funzione per gestire il backspace
+    const handleBackspace = (e, currentIndex) => {
+      const currentInput = targaInputs[currentIndex];
+      
+      if (e.key === 'Backspace' && currentInput.selectionStart === 0 && currentIndex > 0) {
+        e.preventDefault();
+        const prevInput = targaInputs[currentIndex - 1];
+        prevInput.focus();
+        prevInput.setSelectionRange(prevInput.value.length, prevInput.value.length);
+        prevInput.value = prevInput.value.slice(0, -1);
+        updateHiddenField();
+      }
+    };
+
+    // Applica i listener a tutti gli input
+    targaInputs.forEach((input, index) => {
+      // Input event
+      input.addEventListener('input', () => {
+        input.value = validateTargaInput(input, index);
+        updateHiddenField();
+        
+        if (input.value.length === input.maxLength) {
+          moveToNext(index);
         }
       });
-      inp.addEventListener('keydown', e => moveFocusOnBackspace(e, i, 'telaio'));
-    });
-  }
 
-  // ----- 5) Gestione input Targa dinamico (modifica targa) -----
-  const targaInputs = document.querySelectorAll('.targa-input'),
-        numeroHidden = document.getElementById('numero_hidden');
-  if (targaInputs.length && numeroHidden) {
-    targaInputs.forEach((inp, i) => {
-      inp.addEventListener('input', () => {
-        let v = inp.value.toUpperCase();
-        if ([0,1,5,6].includes(i)) v = v.replace(/[^ABCDEFGHJKLMNPRSTVWXYZ]/g, '');
-        else v = v.replace(/[^0-9]/g, '');
-        inp.value = v;
-        numeroHidden.value = Array.from(targaInputs).map(c => c.value).join('');
-        if (v.length === inp.maxLength) {
-          const next = targaInputs[i + 1];
-          if (next) next.focus();
+      // Keydown event per backspace
+      input.addEventListener('keydown', (e) => {
+        handleBackspace(e, index);
+      });
+    });
+
+    // Inizializza il campo hidden
+    updateHiddenField();
+  };
+
+  // ----- 3) Gestione UNIFICATA input Telaio -----
+  const setupTelaioInputs = () => {
+    // Cerca prima gli input con classe .telaio-input (modifica)
+    let telaioInputs = document.querySelectorAll('.telaio-input');
+    let telaioHidden = document.getElementById('telaio_hidden');
+    
+    // Se non li trova, cerca per name="telaio[]" (creazione)
+    if (!telaioInputs.length) {
+      telaioInputs = document.querySelectorAll('input[name="telaio[]"]');
+      telaioHidden = document.getElementById('telaio_hidden') || document.querySelector('input[name="telaio"]');
+    }
+
+    if (!telaioInputs.length) return;
+
+    // Funzione per validare input telaio
+    const validateTelaioInput = (input) => {
+      return input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    };
+
+    // Funzione per aggiornare il campo hidden
+    const updateHiddenField = () => {
+      if (telaioHidden) {
+        telaioHidden.value = Array.from(telaioInputs).map(input => input.value).join('');
+      }
+    };
+
+    // Funzione per muovere il focus al prossimo campo
+    const moveToNext = (currentIndex) => {
+      if (currentIndex < telaioInputs.length - 1) {
+        telaioInputs[currentIndex + 1].focus();
+      }
+    };
+
+    // Funzione per gestire il backspace
+    const handleBackspace = (e, currentIndex) => {
+      const currentInput = telaioInputs[currentIndex];
+      
+      if (e.key === 'Backspace' && currentInput.selectionStart === 0 && currentIndex > 0) {
+        e.preventDefault();
+        const prevInput = telaioInputs[currentIndex - 1];
+        prevInput.focus();
+        prevInput.setSelectionRange(prevInput.value.length, prevInput.value.length);
+        prevInput.value = prevInput.value.slice(0, -1);
+        updateHiddenField();
+      }
+    };
+
+    // Applica i listener a tutti gli input
+    telaioInputs.forEach((input, index) => {
+      // Input event
+      input.addEventListener('input', () => {
+        input.value = validateTelaioInput(input);
+        updateHiddenField();
+        
+        if (input.value.length === input.maxLength) {
+          moveToNext(index);
         }
       });
-      inp.addEventListener('keydown', e => moveFocusOnBackspace(e, i, 'targa'));
-    });
-  }
 
-  // ----- 6) Ricerca e selezione veicoli (form targa) -----
+      // Keydown event per backspace
+      input.addEventListener('keydown', (e) => {
+        handleBackspace(e, index);
+      });
+    });
+
+    // Inizializza il campo hidden
+    updateHiddenField();
+  };
+
+  // Inizializza gli input
+  setupTargaInputs();
+  setupTelaioInputs();
+
+  // ----- 4) Toggle motivazione revisione -----
+  const toggleMotivazione = () => {
+    const sel = document.getElementById('esito');
+    const divMot = document.getElementById('motivazioneDiv');
+    const ta = document.getElementById('motivazione');
+    
+    if (sel && divMot && ta) {
+      const handleToggle = () => {
+        if (sel.value === 'Non superata') {
+          divMot.style.display = 'block';
+          ta.required = true;
+        } else {
+          divMot.style.display = 'none';
+          ta.required = false;
+          ta.value = ''; // Pulisce il campo quando non necessario
+        }
+      };
+      
+      sel.addEventListener('change', handleToggle);
+      // Inizializza lo stato
+      handleToggle();
+    }
+  };
+  
+  toggleMotivazione();
+
+  // ----- 5) Ricerca e selezione veicoli (form targa) -----
   if (typeof availableVehicles !== 'undefined') {
     const inpSearch = document.getElementById('veicolo_search'),
           dd = document.getElementById('vehicleDropdown'),
           hid = document.getElementById('veicolo_telaio'),
           clr = document.getElementById('clearSelection');
-    let hl = -1;
-    const render = list => {
-      dd.innerHTML = '';
-      if (!list.length) {
-        dd.innerHTML = '<div class="no-results">Nessun veicolo trovato</div>';
-      } else {
-        list.forEach((v, i) => {
-          const o = document.createElement('div');
-          o.className = 'vehicle-option';
-          o.innerHTML = `<div><strong>${v.telaio}</strong></div><div class="vehicle-info">${v.marca} ${v.modello} (${v.dataProd})</div>`;
-          o.addEventListener('click', () => {
-            inpSearch.value = `${v.telaio} - ${v.marca} ${v.modello}`;
-            hid.value = v.telaio;
-            inpSearch.classList.add('selected-vehicle');
-            dd.style.display = 'none';
-            clr.style.display = 'block';
-            hl = -1;
+    
+    if (inpSearch && dd && hid && clr) {
+      let hl = -1;
+      
+      const render = list => {
+        dd.innerHTML = '';
+        if (!list.length) {
+          dd.innerHTML = '<div class="no-results">Nessun veicolo trovato</div>';
+        } else {
+          list.forEach((v, i) => {
+            const o = document.createElement('div');
+            o.className = 'vehicle-option';
+            o.innerHTML = `<div><strong>${v.telaio}</strong></div><div class="vehicle-info">${v.marca} ${v.modello} (${v.dataProd})</div>`;
+            o.addEventListener('click', () => {
+              inpSearch.value = `${v.telaio} - ${v.marca} ${v.modello}`;
+              hid.value = v.telaio;
+              inpSearch.classList.add('selected-vehicle');
+              dd.style.display = 'none';
+              clr.style.display = 'block';
+              hl = -1;
+            });
+            dd.appendChild(o);
           });
-          dd.appendChild(o);
-        });
-      }
-      dd.style.display = 'block';
-    };
-    inpSearch.addEventListener('input', e => {
-      clr.style.display = 'none';
-      const q = e.target.value.trim().toLowerCase();
-      if (!q) return void(dd.style.display = 'none');
-      render(availableVehicles.filter(v =>
-        v.telaio.toLowerCase().includes(q) || v.marca.toLowerCase().includes(q) || v.modello.toLowerCase().includes(q)
-      ));
-    });
-    inpSearch.addEventListener('keydown', e => {
-      const opts = dd.querySelectorAll('.vehicle-option');
-      if (!opts.length) return;
-      switch (e.key) {
-        case 'ArrowDown': e.preventDefault(); hl = Math.min(hl + 1, opts.length - 1); break;
-        case 'ArrowUp':   e.preventDefault(); hl = Math.max(hl - 1, 0); break;
-        case 'Enter':     e.preventDefault(); if (hl >= 0) opts[hl].click(); break;
-        case 'Escape':    dd.style.display = 'none'; hl = -1; break;
-      }
-      opts.forEach((o, i) => o.classList.toggle('highlighted', i === hl));
-      if (hl >= 0) opts[hl].scrollIntoView({ block: 'nearest' });
-    });
-    clr.addEventListener('click', () => {
-      inpSearch.value = '';
-      hid.value = '';
-      inpSearch.classList.remove('selected-vehicle');
-      clr.style.display = 'none';
-      dd.style.display = 'none';
-      hl = -1;
-    });
-    document.addEventListener('click', e => {
-      if (!inpSearch.contains(e.target) && !dd.contains(e.target)) {
-        dd.style.display = 'none'; hl = -1;
-      }
-    });
+        }
+        dd.style.display = 'block';
+      };
+      
+      inpSearch.addEventListener('input', e => {
+        clr.style.display = 'none';
+        const q = e.target.value.trim().toLowerCase();
+        if (!q) return void(dd.style.display = 'none');
+        render(availableVehicles.filter(v =>
+          v.telaio.toLowerCase().includes(q) || 
+          v.marca.toLowerCase().includes(q) || 
+          v.modello.toLowerCase().includes(q)
+        ));
+      });
+      
+      inpSearch.addEventListener('keydown', e => {
+        const opts = dd.querySelectorAll('.vehicle-option');
+        if (!opts.length) return;
+        switch (e.key) {
+          case 'ArrowDown': e.preventDefault(); hl = Math.min(hl + 1, opts.length - 1); break;
+          case 'ArrowUp':   e.preventDefault(); hl = Math.max(hl - 1, 0); break;
+          case 'Enter':     e.preventDefault(); if (hl >= 0) opts[hl].click(); break;
+          case 'Escape':    dd.style.display = 'none'; hl = -1; break;
+        }
+        opts.forEach((o, i) => o.classList.toggle('highlighted', i === hl));
+        if (hl >= 0) opts[hl].scrollIntoView({ block: 'nearest' });
+      });
+      
+      clr.addEventListener('click', () => {
+        inpSearch.value = '';
+        hid.value = '';
+        inpSearch.classList.remove('selected-vehicle');
+        clr.style.display = 'none';
+        dd.style.display = 'none';
+        hl = -1;
+      });
+      
+      document.addEventListener('click', e => {
+        if (!inpSearch.contains(e.target) && !dd.contains(e.target)) {
+          dd.style.display = 'none'; 
+          hl = -1;
+        }
+      });
+    }
   }
 
-  // ----- 7) Modali restituisci/elimina -----
+  // ----- 6) Modali restituisci/elimina -----
   window.apriDialogRestituisci = (num, de) => {
-    document.getElementById('modal-targa-numero').value = num;
-    document.getElementById('testo-restituisci').innerHTML = `Vuoi davvero restituire la targa <strong>${num}</strong>`;
-    document.getElementById('modal-restituisci').style.display = 'flex';
+    const modalTargaNumero = document.getElementById('modal-targa-numero');
+    const testoRestituisci = document.getElementById('testo-restituisci');
+    const modalRestituisci = document.getElementById('modal-restituisci');
+    
+    if (modalTargaNumero && testoRestituisci && modalRestituisci) {
+      modalTargaNumero.value = num;
+      testoRestituisci.innerHTML = `Vuoi davvero restituire la targa <strong>${num}</strong>`;
+      modalRestituisci.style.display = 'flex';
+    }
   };
+  
   window.chiudiDialogRestituisci = () => {
-    document.getElementById('modal-restituisci').style.display = 'none';
+    const modalRestituisci = document.getElementById('modal-restituisci');
+    if (modalRestituisci) {
+      modalRestituisci.style.display = 'none';
+    }
   };
 
   let curr = {};
   window.apriDialogDelete = (table, id) => {
     curr = { table, id };
-    document.getElementById('modal-table').value = table;
-    document.getElementById('modal-id').value = id;
-        document.getElementById('testo-restituisci').innerHTML = `Vuoi davvero eliminare ${table}<br><strong>${id} </strong>? `;
-
-    document.getElementById('modal-restituisci').style.display = 'flex';
+    const modalTable = document.getElementById('modal-table');
+    const modalId = document.getElementById('modal-id');
+    const testoRestituisci = document.getElementById('testo-restituisci');
+    const modalRestituisci = document.getElementById('modal-restituisci');
+    
+    if (modalTable && modalId && testoRestituisci && modalRestituisci) {
+      modalTable.value = table;
+      modalId.value = id;
+      testoRestituisci.innerHTML = `Vuoi davvero eliminare ${table}<br><strong>${id}</strong>?`;
+      modalRestituisci.style.display = 'flex';
+    }
   };
+  
   window.chiudiDialogDelete = () => {
-    document.getElementById('modal-restituisci').style.display = 'none';
+    const modalRestituisci = document.getElementById('modal-restituisci');
+    if (modalRestituisci) {
+      modalRestituisci.style.display = 'none';
+    }
   };
+  
   window.confermaDelete = () => {
     const btn = document.getElementById('confirmDelete');
+    if (!btn) return;
+    
     btn.disabled = true;
     btn.textContent = 'Eliminando...';
     const fd = new FormData();
     fd.append('table', curr.table);
     fd.append('id', curr.id);
+    
     fetch('../operations/delete_handler.php', { method: 'POST', body: fd })
       .then(r => r.json())
-      .then(d => { window.chiudiDialogDelete(); alert(d.message); location.reload(); })
-      .catch(e => { window.chiudiDialogDelete(); alert('Errore: ' + e.message); });
+      .then(d => { 
+        window.chiudiDialogDelete(); 
+        alert(d.message); 
+        location.reload(); 
+      })
+      .catch(e => { 
+        window.chiudiDialogDelete(); 
+        alert('Errore: ' + e.message);
+        btn.disabled = false;
+        btn.textContent = 'Conferma';
+      });
   };
 });
 
+// Funzione per nascondere messaggi dopo un delay
 function hideMessageAfterDelay(delay = 4000) {
-    const message = document.querySelector('.message');
-    if (message) {
-        setTimeout(() => {
-        	message.style.transition = 'opacity 1.5s ease';
-            message.style.opacity = '0';
-            setTimeout(() => message.remove(), 1500); // Rimuove dopo dissolvenza
-        }, delay);
-    }
+  const message = document.querySelector('.message');
+  if (message) {
+    setTimeout(() => {
+      message.style.transition = 'opacity 1.5s ease';
+      message.style.opacity = '0';
+      setTimeout(() => message.remove(), 1500);
+    }, delay);
+  }
 }
+
+// Funzioni legacy per compatibilità (rimosse perché ora unificate)
+// Queste non servono più ma le lascio commentate per riferimento
+/*
+window.moveFocus = (el, idx, field) => {
+  // Ora gestito dalla funzione unificata
+};
+
+window.moveFocusOnBackspace = (e, idx, field) => {
+  // Ora gestito dalla funzione unificata
+};
+*/
