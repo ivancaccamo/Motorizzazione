@@ -65,7 +65,7 @@
                                 <td>{{ v.telaio }}</td>
                                 <td>{{ v.marca }}</td>
                                 <td>{{ v.modello }}</td>
-                                <td>{{ v.data_produzione }}</td>
+                                <td>{{ v.data_produzione|date:"Y-m-d" }}</td>
                                 <td class="crud-options">
                                     <a href="{% url 'dettaglio_record' 'veicolo' v.telaio %}" class="view">Visualizza</a>
                                     <a href="{% url 'modifica' 'veicolo' v.telaio %}" class="edit">Modifica</a>
