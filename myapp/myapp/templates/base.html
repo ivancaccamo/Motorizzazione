@@ -48,7 +48,7 @@
         <p>&copy; {{ now|date:"Y" }} Sistema Gestionale Motorizzazione Civile</p>
     </footer>
 
-    <script src="{% static 'js/function.js' %}"></script>
+    <script src="{% static 'function.js' %}" defer></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             hideMessageAfterDelay();

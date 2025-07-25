@@ -16,11 +16,18 @@
       <div class="telaio-wrapper">
         {% for char in veicolo.telaio %}
           <div class="telaio-box">
-            <input type="text" maxlength="1" class="telaio-input" name="telaio[]" value="{{ char }}" required>
+            <input type="text"
+                  maxlength="1"
+                  class="telaio-input"
+                  name="telaio[]"
+                  value="{{ char }}"
+                  required
+                  oninput="moveFocus(this, {{ forloop.counter0 }}, 'telaio')"
+                  onkeydown="moveFocusOnBackspace(event, {{ forloop.counter0 }}, 'telaio')">
           </div>
         {% endfor %}
       </div>
-      <input type="hidden" name="telaio_hidden" value="{{ veicolo.telaio }}">
+      <input type="hidden" id="telaio_hidden" name="telaio" value="{{ veicolo.telaio }}">
       <label>Marca:</label><input type="text" name="marca" value="{{ veicolo.marca }}" required>
       <label>Modello:</label><input type="text" name="modello" value="{{ veicolo.modello }}" required>
       <label>Data Produzione:</label><input type="date" name="dataProd" value="{{ veicolo.dataProd|date:'Y-m-d' }}" required>
@@ -34,11 +41,18 @@
       <div class="targa-wrapper">
         {% for char in targa.numero %}
           <div class="targa-box">
-            <input type="text" maxlength="1" class="targa-input" name="targa[]" value="{{ char }}" required>
+            <input type="text"
+                  maxlength="1"
+                  class="targa-input"
+                  name="targa[]"
+                  value="{{ char }}"
+                  required
+                  oninput="moveFocus(this, {{ forloop.counter0 }}, 'targa')"
+                  onkeydown="moveFocusOnBackspace(event, {{ forloop.counter0 }}, 'targa')">
           </div>
         {% endfor %}
       </div>
-      <input type="hidden" name="numero_hidden" value="{{ targa.numero }}">
+      <input type="hidden" id="numero_hidden" name="numero" value="{{ targa.numero }}">
       <label>Data Emissione:</label><input type="date" name="dataEm" value="{{ targa.dataEm|date:'Y-m-d' }}" required>
       <button type="submit" class="btn-primary">Salva</button>
       <a href="{% url 'gestione_targhe' %}" class="btn-cancel">Annulla</a>
