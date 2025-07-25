@@ -3,21 +3,36 @@
 
 
 {% block content %}
-  <style>
-    /* Annulla width, sfondo, ombra ed attiva il flex centering */
-    .container > .content {
-      width: auto          !important;
-      background: none     !important;
-      box-shadow: none     !important;
+ <style>
+  /* 1) Annulla il wrapper di base e lo rende flex */
+  .container > .content {
+    width: auto          !important;
+    background: none     !important;
+    box-shadow: none     !important;
+    display: flex        !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0           !important;
+  }
 
-      display: flex        !important;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+  /* 2) Applicato a TUTTI i .card-custom in questo template */
+  .card-custom dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.5rem 1rem;
+    align-items: center;
+  }
+  .card-custom dl dt {
+    font-weight: 600;
+    text-align: right;
+  }
+  .card-custom dl dd {
+    margin: 0;
+    text-align: left;
+  }
+</style>
 
-      padding: 0           !important;
-    }
-  </style>
 
   <div style="width:50%; min-height:73vh; padding:20px; background:#fff; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
       {% if message %}
@@ -31,12 +46,12 @@
           {# ——— colonna sinistra: card dettagli ——— #}
           <div style="flex:0 0 300px; margin-right:20px;">
             <h2>Dettagli Veicolo</h2>
-            <div class="card-custom mb-4">
+            <div class="card-custom mb-4"  style="width:350px; margin:0 auto; padding:1.5rem;">
               <dl>
                 <dt>Telaio</dt><dd>{{ data.telaio }}</dd>
                 <dt>Marca</dt><dd>{{ data.marca }}</dd>
                 <dt>Modello</dt><dd>{{ data.modello }}</dd>
-                <dt>Data Produzione</dt><dd>{{ data.dataProd }}</dd>
+                <dt>Data Produzione</dt><dd>{{ data.data_produzione|date:"Y-m-d" }}</dd>
               </dl>
             </div>
           </div>
@@ -83,8 +98,8 @@
                     {% for t in related.restituite %}
                       <tr>
                         <td>{{ t.targaNumero.numero }}</td>
-                        <td>{{ t.targaNumero.dataEm }}</td>
-                        <td>{{ t.dataRes }}</td>
+                        <td>{{ t.targaNumero.dataEm|date:"Y-m-d" }}</td>
+                        <td>{{ t.data_restituzione|date:"Y-m-d"}}</td>
                         <td class="crud-options">
                           <a href="{% url 'dettaglio_record' 'targa' t.targaNumero.numero %}" class="view">Visualizza</a>
                         </td>
@@ -107,39 +122,107 @@
 
       {# ——— Qui ripetere la stessa logica per 'targa' e 'revisione', con lo stesso pattern a due colonne ——— #}
       {% if data and table == 'targa' %}
-        <div class="d-flex flex-wrap">
-          <div style="flex:0 0 300px; margin-right:20px;">
-            <h2>Dettagli Targa</h2>
-            <div class="card-custom mb-4">
-              <dl>
-                <dt>Numero</dt><dd>{{ data.numero }}</dd>
-                <dt>Data Emissione</dt><dd>{{ data.dataEm }}</dd>
-                <dt>Stato</dt><dd>{{ related.stato }}</dd>
-              </dl>
-            </div>
-          </div>
-          <div style="flex:1 1 0; min-width:300px;">
-            {% if related.veicolo %}
-              <h3>Veicolo</h3>
-              <!-- tabella veicolo -->
-            {% else %}
-              <p>Data restituzione: {{ related.restituzione.dataRes }}</p>
-            {% endif %}
-            <h3>Revisioni</h3>
-            <!-- tabella revisioni -->
-            <div class="actions mt-3">
-              <a href="{% url 'modifica' 'targa' data.numero %}" class="btn-primary">Modifica</a>
-              <a href="{% url 'gestione_targhe' %}" class="btn-cancel">Torna indietro</a>
-            </div>
-          </div>
+  <div class="d-flex flex-wrap">
+
+    <!-- colonna sinistra -->
+    <div style="flex:0 0 300px; margin-right:20px;">
+      <h2>Dettagli Targa</h2>
+      <div class="card-custom mb-4" style="width:350px; margin:0 auto; padding:1.5rem;">
+        <dl>
+          <dt>Numero</dt><dd>{{ data.numero }}</dd>
+          <dt>Data Emissione</dt><dd>{{ data.dataEm|date:"Y-m-d" }}</dd>
+          <dt>Stato</dt><dd>{{ related.stato }}</dd>
+        </dl>
+      </div>
+    </div>
+
+    <!-- colonna destra -->
+    <div style="flex:1 1 0; min-width:300px;">
+      {% if related.veicolo %}
+        <h3>Veicolo</h3>
+        <div class="table-container mb-4">
+  <table>
+    <thead>
+      <tr>
+        <th>Telaio</th>
+        <th>Marca</th>
+        <th>Modello</th>
+        <th>Azioni</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ related.veicolo.telaio }}</td>
+        <td>{{ related.veicolo.marca }}</td>
+        <td>{{ related.veicolo.modello }}</td>
+        <td class="crud-options">
+          <a href="{% url 'dettaglio_record' 'veicolo' related.veicolo.telaio %}"
+             class="view">Visualizza</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+      {% else %}
+        <h3>Targa restituita</h3>
+        <div class="table-container mb-4">
+          <p>Data Restituzione: {{ related.restituzione.data_restituzione|date:"Y-m-d" }}</p>
         </div>
       {% endif %}
+
+      <h3>Revisioni</h3>
+{% if related.revisioni %}
+  <div class="table-container mb-4">
+    <table>
+      <thead>
+        <tr>
+          <th>Numero</th>
+          <th>Data Revisione</th>
+          <th>Esito</th>
+          <th>Motivazione</th>
+          <th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rev in related.revisioni %}
+          <tr>
+            <td>{{ rev.numero }}</td>
+            <td>{{ rev.dataRev|date:"Y-m-d" }}</td>
+            <td>{{ rev.esito }}</td>
+            <td>{{ rev.motivazione|default:"—" }}</td>
+            <td class="crud-options">
+              <a href="{% url 'dettaglio_record' 'revisione' rev.numero %}" class="view">
+                Visualizza
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="table-container mb-4">
+    <p>Nessuna revisione associata.</p>
+  </div>
+{% endif %}
+
+    </div>
+  </div>
+
+  <!-- I BOTTONI FUORI DAL FLEX, DOPO TUTTO -->
+  <div class="actions mt-3">
+    <a href="{% url 'modifica' 'targa' data.numero %}" class="btn-primary">Modifica</a>
+    <a href="{% url 'gestione_targhe' %}" class="btn-cancel">Torna indietro</a>
+  </div>
+{% endif %}
+
 
       {% if data and table == 'revisione' %}
         <div class="d-flex flex-wrap">
           <div style="flex:0 0 300px; margin-right:20px;">
             <h2>Dettagli Revisione</h2>
-            <div class="card-custom mb-4">
+             <div class="card-custom mb-4"  style="width:350px; margin:0 auto; padding:1.5rem;">
               <dl>
                 <dt>ID</dt><dd>{{ data.numero }}</dd>
                 <dt>Targa</dt><dd>{{ data.targaNumero.numero }}</dd>
