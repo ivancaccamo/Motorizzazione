@@ -135,7 +135,7 @@ def dettagli_record(request, table, id):
             targa = Targa.objects.get(numero=targa_numero)
             attiva = Attiva.objects.get(targaNumero=targa)
             veicolo = attiva.veicoloTelaio
-            Restituita.objects.create(targaNumero=targa, dataRes=oggi, veicoloTelaio=veicolo)
+            Restituita.objects.create(targaNumero=targa, data_restituzione=oggi, veicoloTelaio=veicolo)
             attiva.delete()
             message = 'Targa restituita con successo.'
         except Exception as e:
@@ -287,22 +287,69 @@ def create(request):
                     message = f"Errore: {str(e)}"
 
         elif table == 'targa':
-            numero = ''.join(request.POST.getlist('targa')).upper()
-            if not re.match(r'^[A-Z]{2}[0-9]{3}[A-Z]{2}$', numero):
-                message = "❌ Errore: formato targa non valido."
+            targa_parts = request.POST.getlist('targa[]')
+            numero = ''.join(targa_parts).upper()
+            
+            # Validazione formato targa italiana (esclude lettere I, O, Q, U)
+            if not re.match(r'^[A-HJ-NPR-Z]{2}[0-9]{3}[A-HJ-NPR-Z]{2}$', numero):
+                message = "❌ Errore: formato targa non valido. Deve essere: 2 lettere + 3 numeri + 2 lettere (escluse I, O, Q, U)."
+            elif len(numero) != 7:
+                message = f"Errore: La targa deve contenere esattamente 7 caratteri. Ricevuto: {len(numero)} caratteri."
             elif Targa.objects.filter(numero=numero).exists():
                 message = "Errore: Esiste già una targa con questo numero."
             else:
-                try:
-                    targa = Targa.objects.create(numero=numero, dataEm=request.POST['dataEm'])
-                    Attiva.objects.create(
-                        targaNumero=targa,
-                        veicoloTelaio_id=request.POST['veicolo_telaio']
-                    )
-                    message = "Targa aggiunta con successo."
-                    success = True
-                except Exception as e:
-                    message = f"Errore: {str(e)}"
+                veicolo_telaio = request.POST.get('veicolo_telaio')
+                if not veicolo_telaio:
+                    message = "Errore: Devi selezionare un veicolo per la targa."
+                else:
+                    try:
+                        # Verifica che il veicolo esista e non abbia già una targa attiva
+                        if not Veicolo.objects.filter(telaio=veicolo_telaio).exists():
+                            message = "Errore: Il veicolo selezionato non esiste."
+                        elif Attiva.objects.filter(veicoloTelaio_id=veicolo_telaio).exists():
+                            message = "Errore: Il veicolo selezionato ha già una targa attiva."
+                        else:
+                            # Crea la targa
+                            targa = Targa.objects.create(
+                                numero=numero, 
+                                dataEm=request.POST['dataEm']
+                            )
+                            # Crea la relazione attiva
+                            Attiva.objects.create(
+                                targaNumero=targa,
+                                veicoloTelaio_id=veicolo_telaio
+                            )
+                            message = "Targa aggiunta con successo."
+                            success = True
+                    except Exception as e:
+                        message = f"Errore durante la creazione della targa: {str(e)}"
+
+    # Se table è ancora None, mostra errore
+                    if not table:
+                     return HttpResponseBadRequest("Parametro 'table' mancante.")
+
+                     context = {'table': table, 'message': message, 'success': success}
+
+   
+                    # Ottieni veicoli disponibili (senza targa attiva)
+                    veicoli_disponibili = Veicolo.objects.exclude(
+                        telaio__in=Attiva.objects.values_list('veicoloTelaio_id', flat=True)
+                    ).order_by('marca', 'modello', 'telaio')
+                    
+                    # Converti in formato JSON per JavaScript
+                    veicoli_list = []
+                    for veicolo in veicoli_disponibili:
+                        veicoli_list.append({
+                            'telaio': veicolo.telaio,
+                            'marca': veicolo.marca,
+                            'modello': veicolo.modello,
+                            'dataProd': veicolo.data_produzione.strftime('%Y-%m-%d') if veicolo.data_produzione else ''
+                        })
+                    
+                    context['veicoli_disponibili'] = veicoli_disponibili
+                    context['veicoli_disponibili_json'] = json.dumps(veicoli_list)
+
+                    return render(request, 'create.html', context)
 
         elif table == 'revisione':
             try:
