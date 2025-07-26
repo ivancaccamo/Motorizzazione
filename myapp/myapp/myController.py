@@ -116,6 +116,7 @@ def modifica(request, table, id):
             messages.error(request, f"Errore durante la modifica: {e}")
 
     return render(request, 'modifica.html', context)
+
 def dettagli_record(request, table, id):
     message = ''
     data = {}
