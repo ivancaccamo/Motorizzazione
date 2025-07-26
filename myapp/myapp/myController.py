@@ -116,6 +116,7 @@ def modifica(request, table, id):
             messages.error(request, f"Errore durante la modifica: {e}")
 
     return render(request, 'modifica.html', context)
+
 def dettagli_record(request, table, id):
     message = ''
     data = {}
@@ -135,7 +136,7 @@ def dettagli_record(request, table, id):
             targa = Targa.objects.get(numero=targa_numero)
             attiva = Attiva.objects.get(targaNumero=targa)
             veicolo = attiva.veicoloTelaio
-            Restituita.objects.create(targaNumero=targa, dataRes=oggi, veicoloTelaio=veicolo)
+            Restituita.objects.create(targaNumero=targa, data_restituzione=oggi, veicoloTelaio=veicolo)
             attiva.delete()
             message = 'Targa restituita con successo.'
         except Exception as e:
