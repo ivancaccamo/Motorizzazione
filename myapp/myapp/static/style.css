@@ -236,6 +236,7 @@ button:hover {
     display: flex;
     align-items: center;
     justify-content: center;
+    
 }
 
 .crud-options a + a {
@@ -454,9 +455,11 @@ p{
     transform: translateY(-1px);
 }
 
-.actions a.btn.delete {
+.read-page.btn-delete {
+    padding: 6px 12px;
     background-color: #dc3545;
     color: #fff;
+
 }
 
 .actions a.btn.first-of-type {
@@ -469,28 +472,8 @@ p{
     color: #fff;
 }
 
-.read-page .content {
-    max-width: 800px;
-    margin: 0 auto;
-}
 
-.read-page .content dd {
-    margin: 0;
-    color: #555;
-}
 
-.read-page .content dl {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 12px 20px;
-    margin-bottom: 30px;
-}
-
-.read-page .content dt {
-    font-weight: 600;
-    text-align: right;
-    padding-right: 10px;
-}
 
 .content .read-page p {
     background: #f1f5f9;
@@ -498,7 +481,7 @@ p{
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     text-align: center;
-    color: #555;
+    color: #555;    
 }
 
 /* Selected vehicle styling */

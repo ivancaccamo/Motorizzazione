@@ -265,10 +265,12 @@ def create(request):
     success = False
 
     if request.method == 'POST':
+        
         if table == 'veicolo':
-            telaio = ''.join(request.POST.getlist('telaio')).upper()
-            if len(telaio) != 16:
-                message = "Errore: Il numero di telaio deve contenere esattamente 17 caratteri."
+            telaio = ''.join(request.POST.getlist('telaio[]')).upper()
+            if len(telaio) != 17:
+                print("Telaio:", telaio)
+                message = f"Errore: Il numero di telaio deve contenere esattamente 17 caratteri.{telaio}"
             elif Veicolo.objects.filter(telaio=telaio).exists():
                 message = "Errore: Esiste già un veicolo con questo numero di telaio."
             else:
@@ -286,7 +288,7 @@ def create(request):
 
         elif table == 'targa':
             numero = ''.join(request.POST.getlist('targa')).upper()
-            if not re.match(r'^[A-HJ-NPR-Z]{2}[0-9]{3}[A-HJ-NPR-Z]{2}$', numero):
+            if not re.match(r'^[A-Z]{2}[0-9]{3}[A-Z]{2}$', numero):
                 message = "❌ Errore: formato targa non valido."
             elif Targa.objects.filter(numero=numero).exists():
                 message = "Errore: Esiste già una targa con questo numero."
