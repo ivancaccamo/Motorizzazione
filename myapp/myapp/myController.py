@@ -204,55 +204,66 @@ def gestioneRevisione(request):
             messages.error(request, "Revisione non trovata.")
         return redirect('gestione_revisioni')  # name dell'url
 
-    # Filtri dalla GET o dalla sessione
+    # Gestione clear filters
     if 'clear_filters' in request.GET:
         request.session.pop('filters_revisioni', None)
         return redirect('gestione_revisioni')
 
-    filters = request.GET.dict()
-    filters.pop('sort', None)
-    filters.pop('dir', None)
-    filters.pop('clear_filters', None)
+    # Ottieni tutti i parametri dalla GET
+    current_params = request.GET.dict()
+    
+    # Separa i filtri dai parametri di ordinamento
+    filters = {k: v for k, v in current_params.items() 
+              if k not in ['sort', 'dir', 'clear_filters'] and v}
+    
+    sort_param = request.GET.get('sort', 'numero')
+    dir_param = request.GET.get('dir', 'asc')
 
+    # Gestione filtri in sessione
     if filters:
+        # Salva i filtri in sessione
         request.session['filters_revisioni'] = filters
+    elif 'filters_revisioni' in request.session and not any(k in current_params for k in ['sort', 'dir']):
+        # Se non ci sono filtri nella GET e non stiamo ordinando, 
+        # recupera i filtri dalla sessione e reindirizza
+        saved_filters = request.session['filters_revisioni']
+        filter_params = '&'.join([f'{k}={v}' for k, v in saved_filters.items()])
+        return redirect(f"{reverse('gestione_revisioni')}?{filter_params}")
     elif 'filters_revisioni' in request.session:
+        # Se stiamo ordinando, usa i filtri salvati
         filters = request.session['filters_revisioni']
-        return redirect(f"{reverse('gestione_revisioni')}?{'&'.join([f'{k}={v}' for k, v in filters.items()])}")
 
     queryset = Revisione.objects.select_related('targaNumero')
 
     # Applica filtri
-    if 'id_revisione' in request.GET and request.GET['id_revisione']:
-        queryset = queryset.filter(numero=request.GET['id_revisione'])
+    if 'id_revisione' in filters and filters['id_revisione']:
+        queryset = queryset.filter(numero=filters['id_revisione'])
 
-    if 'dataRev' in request.GET and request.GET['dataRev']:
-        queryset = queryset.filter(dataRev=request.GET['dataRev'])
+    if 'dataRev' in filters and filters['dataRev']:
+        queryset = queryset.filter(dataRev=filters['dataRev'])
 
-    if 'stato' in request.GET and request.GET['stato']:
-        if request.GET['stato'] == 'superata':
+    if 'stato' in filters and filters['stato']:
+        if filters['stato'] == 'superata':
             queryset = queryset.filter(esito='Superata')
-        elif request.GET['stato'] == 'non_superata':
+        elif filters['stato'] == 'non_superata':
             queryset = queryset.filter(esito='Non superata')
 
-    # Ordinamento
+    # Validazione e applicazione ordinamento
     valid_columns = ['numero', 'targaNumero__numero', 'dataRev']
-    order_by = request.GET.get('sort', 'numero')
-    direction = request.GET.get('dir', 'asc')
-    if order_by not in valid_columns:
-        order_by = 'numero'
-    if direction not in ['asc', 'desc']:
-        direction = 'asc'
-    if direction == 'desc':
-        order_by = '-' + order_by
-
-    revisioni = queryset.order_by(order_by)
+    if sort_param not in valid_columns:
+        sort_param = 'numero'
+    if dir_param not in ['asc', 'desc']:
+        dir_param = 'asc'
+    
+    order = f"-{sort_param}" if dir_param == 'desc' else sort_param
+    revisioni = queryset.order_by(order)
 
     return render(request, 'revisione.html', {
         'revisioni': revisioni,
-        'sort': request.GET.get('sort', ''),
-        'dir': request.GET.get('dir', ''),
+        'sort': sort_param,
+        'dir': dir_param,
         'get': request.GET,
+        'current_filters': filters,  # Aggiungi i filtri correnti
         'pagina_attiva': 'revisione',
         'show_sidebar': True,
     })
@@ -330,9 +341,27 @@ def create(request):
                     except Exception as e:
                         message = f"Errore durante la creazione della targa: {str(e)}"
 
+        elif table == 'revisione':
+            try:
+                kwargs = {
+                    'targaNumero_id': request.POST['numero_targa'],
+                    'dataRev': request.POST['dataRev'],
+                    'esito': request.POST['esito']
+                }
+                if request.POST['esito'] == 'Non superata':
+                    kwargs['motivazione'] = request.POST.get('motivazione', '')
+                Revisione.objects.create(**kwargs)
+                message = "Revisione aggiunta con successo."
+                success = True
+            except Exception as e:
+                message = f"Errore: {str(e)}"
+
+        else:
+            return HttpResponseBadRequest(f"Tipo non supportato: {table}")
+
     # Se table è ancora None, mostra errore
     if not table:
-        return HttpResponseBadRequest("Parametro 'table' mancante.")
+        return HttpResponseBadRequest("Parametro 'table' mancante. Usa ?table=veicolo, ?table=targa, o ?table=revisione nell'URL.")
 
     context = {'table': table, 'message': message, 'success': success}
 
@@ -355,38 +384,6 @@ def create(request):
         context['veicoli_disponibili'] = veicoli_disponibili
         context['veicoli_disponibili_json'] = json.dumps(veicoli_list)
 
-    # Gestisci altri tipi di tabella (veicolo, revisione) qui...
-
-        return render(request, 'create.html', context)
-
-    elif table == 'revisione':
-        try:
-                kwargs = {
-                    'targaNumero_id': request.POST['numero_targa'],
-                    'dataRev': request.POST['dataRev'],
-                    'esito': request.POST['esito']
-                }
-                if request.POST['esito'] == 'Non superata':
-                    kwargs['motivazione'] = request.POST.get('motivazione', '')
-                Revisione.objects.create(**kwargs)
-                message = "Revisione aggiunta con successo."
-                success = True
-        except Exception as e:
-                message = f"Errore: {str(e)}"
-
-        else:
-                return HttpResponseBadRequest(f"Tipo non supportato: {table}")
-
-    # Se table è ancora None, mostra errore
-    if not table:
-        return HttpResponseBadRequest("Parametro 'table' mancante. Usa ?table=veicolo, ?table=targa, o ?table=revisione nell'URL.")
-
-    context = {'table': table, 'message': message, 'success': success}
-
-    if table == 'targa':
-        context['veicoli_disponibili'] = Veicolo.objects.exclude(
-            telaio__in=Attiva.objects.values_list('veicoloTelaio_id', flat=True)
-        )
     elif table == 'revisione':
         context['targhe'] = Targa.objects.all()
 
@@ -407,21 +404,34 @@ def gestioneTarghe(request):
             messages.error(request, f"Errore durante l'eliminazione: {str(e)}")
         return redirect('gestione_targhe')
 
-    # Filtri sessione
+    # Gestione clear filters
     if 'clear_filters' in request.GET:
         request.session.pop('filters_targa', None)
         return redirect('gestione_targhe')
 
-    filters = request.GET.dict()
-    filters.pop('clear_filters', None)
-    filters.pop('sort', None)
-    filters.pop('dir', None)
+    # Ottieni tutti i parametri dalla GET
+    current_params = request.GET.dict()
+    
+    # Separa i filtri dai parametri di ordinamento
+    filters = {k: v for k, v in current_params.items() 
+              if k not in ['sort', 'dir', 'clear_filters'] and v}
+    
+    sort_param = request.GET.get('sort', 'numero')
+    dir_param = request.GET.get('dir', 'asc')
 
+    # Gestione filtri in sessione
     if filters:
+        # Salva i filtri in sessione
         request.session['filters_targa'] = filters
+    elif 'filters_targa' in request.session and not any(k in current_params for k in ['sort', 'dir']):
+        # Se non ci sono filtri nella GET e non stiamo ordinando, 
+        # recupera i filtri dalla sessione e reindirizza
+        saved_filters = request.session['filters_targa']
+        filter_params = '&'.join([f'{k}={v}' for k, v in saved_filters.items()])
+        return redirect(f"{reverse('gestione_targhe')}?{filter_params}")
     elif 'filters_targa' in request.session:
+        # Se stiamo ordinando, usa i filtri salvati
         filters = request.session['filters_targa']
-        return redirect(f"{reverse('gestione_targhe')}?{'&'.join([f'{k}={v}' for k, v in filters.items()])}")
 
     # Query base
     targhe = Targa.objects.all().annotate(
@@ -430,14 +440,14 @@ def gestioneTarghe(request):
     )
 
     # Applica filtri
-    if 'numero' in request.GET and request.GET['numero']:
-        targhe = targhe.filter(numero__icontains=request.GET['numero'])
+    if 'numero' in filters and filters['numero']:
+        targhe = targhe.filter(numero__icontains=filters['numero'])
 
-    if 'dataEm' in request.GET and request.GET['dataEm']:
-        targhe = targhe.filter(dataEm=request.GET['dataEm'])
+    if 'dataEm' in filters and filters['dataEm']:
+        targhe = targhe.filter(dataEm=filters['dataEm'])
 
-    if 'statoTarga' in request.GET and request.GET['statoTarga']:
-        stato = request.GET['statoTarga']
+    if 'statoTarga' in filters and filters['statoTarga']:
+        stato = filters['statoTarga']
         if stato == 'Attiva':
             targhe = targhe.filter(ha_attiva=True)
         elif stato == 'Restituita':
@@ -445,25 +455,26 @@ def gestioneTarghe(request):
         elif stato == 'Non Assegnata':
             targhe = targhe.filter(ha_attiva=False, ha_restituita=False)
 
-    # Ordinamento
+    # Validazione e applicazione ordinamento
     valid_columns = ['numero', 'dataEm']
-    sort = request.GET.get('sort', 'numero')
-    dir = request.GET.get('dir', 'asc')
-    if sort not in valid_columns:
-        sort = 'numero'
-    if dir not in ['asc', 'desc']:
-        dir = 'asc'
-    order = f"-{sort}" if dir == 'desc' else sort
+    if sort_param not in valid_columns:
+        sort_param = 'numero'
+    if dir_param not in ['asc', 'desc']:
+        dir_param = 'asc'
+    
+    order = f"-{sort_param}" if dir_param == 'desc' else sort_param
     targhe = targhe.order_by(order)
 
     return render(request, 'targa.html', {
         'targhe': targhe,
-        'sort': request.GET.get('sort', ''),
-        'dir': request.GET.get('dir', ''),
+        'sort': sort_param,
+        'dir': dir_param,
         'get': request.GET,
+        'current_filters': filters,  # Aggiungi i filtri correnti
         'pagina_attiva': 'targa',
         'show_sidebar': True,
     })
+
 def gestioneVeicoli(request):
     # Eliminazione veicolo
     if request.method == 'POST' and request.POST.get('table') == 'veicolo' and request.POST.get('id'):
@@ -477,50 +488,64 @@ def gestioneVeicoli(request):
             messages.error(request, f"Errore durante l'eliminazione: {str(e)}")
         return redirect('gestione_veicoli')
 
-    # Gestione filtri in sessione
+    # Gestione clear filters
     if 'clear_filters' in request.GET:
         request.session.pop('filters_veicoli', None)
         return redirect('gestione_veicoli')
 
-    filters = request.GET.dict()
-    filters.pop('clear_filters', None)
-    filters.pop('sort', None)
-    filters.pop('dir', None)
+    # Ottieni tutti i parametri dalla GET
+    current_params = request.GET.dict()
+    
+    # Separa i filtri dai parametri di ordinamento
+    filters = {k: v for k, v in current_params.items() 
+              if k not in ['sort', 'dir', 'clear_filters'] and v}
+    
+    sort_param = request.GET.get('sort', 'telaio')
+    dir_param = request.GET.get('dir', 'asc')
 
+    # Gestione filtri in sessione
     if filters:
+        # Salva i filtri in sessione
         request.session['filters_veicoli'] = filters
+    elif 'filters_veicoli' in request.session and not any(k in current_params for k in ['sort', 'dir']):
+        # Se non ci sono filtri nella GET e non stiamo ordinando, 
+        # recupera i filtri dalla sessione e reindirizza
+        saved_filters = request.session['filters_veicoli']
+        filter_params = '&'.join([f'{k}={v}' for k, v in saved_filters.items()])
+        return redirect(f"{reverse('gestione_veicoli')}?{filter_params}")
     elif 'filters_veicoli' in request.session:
+        # Se stiamo ordinando, usa i filtri salvati
         filters = request.session['filters_veicoli']
-        return redirect(f"{reverse('gestione_veicoli')}?{'&'.join([f'{k}={v}' for k, v in filters.items()])}")
 
+    # Costruisci la query
     queryset = Veicolo.objects.all()
 
-    # Filtri
-    if 'telaio' in request.GET and request.GET['telaio']:
-        queryset = queryset.filter(telaio__icontains=request.GET['telaio'])
+    # Applica filtri
+    if 'telaio' in filters and filters['telaio']:
+        queryset = queryset.filter(telaio__icontains=filters['telaio'])
 
-    if 'marca' in request.GET and request.GET['marca']:
-        queryset = queryset.filter(marca__icontains=request.GET['marca'])
+    if 'marca' in filters and filters['marca']:
+        queryset = queryset.filter(marca__icontains=filters['marca'])
 
-    if 'modello' in request.GET and request.GET['modello']:
-        queryset = queryset.filter(modello__icontains=request.GET['modello'])
+    if 'modello' in filters and filters['modello']:
+        queryset = queryset.filter(modello__icontains=filters['modello'])
 
-    # Ordinamento
+    # Validazione e applicazione ordinamento
     valid_columns = ['telaio', 'marca', 'modello', 'data_produzione']
-    sort = request.GET.get('sort', 'telaio')
-    dir = request.GET.get('dir', 'asc')
-    if sort not in valid_columns:
-        sort = 'telaio'
-    if dir not in ['asc', 'desc']:
-        dir = 'asc'
-    order = f"-{sort}" if dir == 'desc' else sort
+    if sort_param not in valid_columns:
+        sort_param = 'telaio'
+    if dir_param not in ['asc', 'desc']:
+        dir_param = 'asc'
+    
+    order = f"-{sort_param}" if dir_param == 'desc' else sort_param
     veicoli = queryset.order_by(order)
 
     return render(request, 'veicolo.html', {
         'veicoli': veicoli,
-        'sort': sort,
-        'dir': dir,
+        'sort': sort_param,
+        'dir': dir_param,
         'get': request.GET,
+        'current_filters': filters,  # Aggiungi i filtri correnti
         'pagina_attiva': 'veicolo',
         'show_sidebar': True,
     })
