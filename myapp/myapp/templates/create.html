@@ -30,7 +30,7 @@
                             maxlength="1"
                             class="telaio-input"
                             name="telaio[]"
-                            value="{{ char }}"
+                            value=""
                             required
                             oninput="moveFocus(this, {{ forloop.counter0 }}, 'telaio')"
                             onkeydown="moveFocusOnBackspace(event, {{ forloop.counter0 }}, 'telaio')">
@@ -47,7 +47,6 @@
    
       <div class="form-group">
         <label>Numero Targa:</label>
-      </div>
       <div class="targa-wrapper">
         <!-- Genera 7 campi vuoti invece di usare i caratteri esistenti -->
         {% for i in "0123456" %}
@@ -60,7 +59,8 @@
                   required>
           </div>
         {% endfor %}
-      </div> 
+      </div>
+    </div>
       <div class="form-group">
         <!-- Mantieni il valore originale nel campo hidden per riferimento -->
         <input type="hidden" id="numero_hidden" name="numero" value="{{ targa.numero }}">
