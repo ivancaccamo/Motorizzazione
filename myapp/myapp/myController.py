@@ -446,7 +446,7 @@ def gestioneTarghe(request):
             targhe = targhe.filter(ha_attiva=False, ha_restituita=False)
 
     # Ordinamento
-    valid_columns = ['numero', 'dataem']
+    valid_columns = ['numero', 'dataEm']
     sort = request.GET.get('sort', 'numero')
     dir = request.GET.get('dir', 'asc')
     if sort not in valid_columns:
