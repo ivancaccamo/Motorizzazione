@@ -4,7 +4,7 @@
 
 {% block content %}
  <style>
-  /* 1) Annulla il wrapper di base e lo rende flex */
+  /*Annulla il wrapper di base e lo rende flex */
   .container > .content {
     width: auto          !important;
     background: none     !important;
@@ -16,7 +16,7 @@
     padding: 0           !important;
   }
 
-  /* 2) Applicato a TUTTI i .card-custom in questo template */
+  /*Applicato a TUTTI i .card-custom in questo template */
   .card-custom dl {
     display: grid;
     grid-template-columns: max-content 1fr;
@@ -32,7 +32,6 @@
     text-align: left;
   }
 </style>
-
 
   <div style="width:50%; min-height:73vh; padding:20px; background:#fff; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
       {% if message %}
@@ -72,10 +71,10 @@
                         <td>{{ t.targaNumero.dataEm }}</td>
                         <td class="crud-options">
                           <a href="{% url 'dettaglio_record' 'targa' t.targaNumero.numero %}" class="view">Visualizza</a>
-                          <form method="post" style="display:inline;">
+                          <form method="post" style="display:inline; margin-top: 0px;">
                             {% csrf_token %}
                             <input type="hidden" name="targa_numero" value="{{ t.targaNumero.numero }}">
-                            <button type="submit" class="btn-delete">Restituisci</button>
+                              <button type="submit" class="btn-delete">Restituisci</button>
                           </form>
                         </td>
                       </tr>
@@ -85,11 +84,8 @@
               </div>
             {% else %}
               <div class="read-page">
-                
-                  <p>Nessuna targa attiva.</p>
-                
-              </div>
-              
+                  <p>Nessuna targa attiva.</p> 
+              </div>  
             {% endif %}
 
             <h3>Targhe Restituite</h3>
@@ -176,10 +172,8 @@
         <h3>Targa restituita</h3>
         <div class="table-container mb-4">
           <div class="read-page">
-
                  <p>Data Restituzione: {{ related.restituzione.data_restituzione|date:"Y-m-d" }}</p>
               </div>
-         
         </div>
       {% endif %}
 
@@ -214,13 +208,10 @@
     </table>
   </div>
 {% else %}
-  <div class="table-container mb-4">
-    
-    <div class="read-page">
-               
-                  <p>Nessuna revisione associata</p>
-                
-              </div>
+  <div class="table-container mb-4">  
+    <div class="read-page">       
+      <p>Nessuna revisione associata</p>
+    </div>
   </div>
 {% endif %}
 
@@ -233,7 +224,6 @@
     <a href="{% url 'gestione_targhe' %}" class="btn-cancel">Torna indietro</a>
   </div>
 {% endif %}
-
 
       {% if data and table == 'revisione' %}
         <div class="d-flex flex-wrap">
@@ -262,13 +252,10 @@
       {% endif %}
 
       {% if not data %}
-         <div class="read-page">
-                
-                  <p>nessun record trovato.</p>
-                
-              </div>
+        <div class="read-page">      
+          <p>nessun record trovato.</p>  
+        </div>
       {% endif %}
     </div>
     
-
 {% endblock %}
