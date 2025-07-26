@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.db.models import Q
@@ -307,7 +308,7 @@ def create(request):
                         # Verifica che il veicolo esista e non abbia già una targa attiva
                         if not Veicolo.objects.filter(telaio=veicolo_telaio).exists():
                             message = "Errore: Il veicolo selezionato non esiste."
-                        elif Attiva.objects.filter(veicoloTelaio_id=veicolo_telaio).exists():
+                        elif Attiva.objects.filter(veicoloTelaio=veicolo_telaio).exists():
                             message = "Errore: Il veicolo selezionato ha già una targa attiva."
                         else:
                             # Crea la targa
@@ -315,10 +316,14 @@ def create(request):
                                 numero=numero, 
                                 dataEm=request.POST['dataEm']
                             )
+                            
+                            # Recupera l'oggetto Veicolo
+                            veicolo_obj = Veicolo.objects.get(telaio=veicolo_telaio)
+                            
                             # Crea la relazione attiva
                             Attiva.objects.create(
                                 targaNumero=targa,
-                                veicoloTelaio_id=veicolo_telaio
+                                veicoloTelaio=veicolo_obj  # <- Corretto!
                             )
                             message = "Targa aggiunta con successo."
                             success = True
@@ -326,34 +331,36 @@ def create(request):
                         message = f"Errore durante la creazione della targa: {str(e)}"
 
     # Se table è ancora None, mostra errore
-                    if not table:
-                     return HttpResponseBadRequest("Parametro 'table' mancante.")
+    if not table:
+        return HttpResponseBadRequest("Parametro 'table' mancante.")
 
-                     context = {'table': table, 'message': message, 'success': success}
+    context = {'table': table, 'message': message, 'success': success}
 
-   
-                    # Ottieni veicoli disponibili (senza targa attiva)
-                    veicoli_disponibili = Veicolo.objects.exclude(
-                        telaio__in=Attiva.objects.values_list('veicoloTelaio_id', flat=True)
-                    ).order_by('marca', 'modello', 'telaio')
-                    
-                    # Converti in formato JSON per JavaScript
-                    veicoli_list = []
-                    for veicolo in veicoli_disponibili:
-                        veicoli_list.append({
-                            'telaio': veicolo.telaio,
-                            'marca': veicolo.marca,
-                            'modello': veicolo.modello,
-                            'dataProd': veicolo.data_produzione.strftime('%Y-%m-%d') if veicolo.data_produzione else ''
-                        })
-                    
-                    context['veicoli_disponibili'] = veicoli_disponibili
-                    context['veicoli_disponibili_json'] = json.dumps(veicoli_list)
+    if table == 'targa':
+        # Ottieni veicoli disponibili (senza targa attiva)
+        veicoli_disponibili = Veicolo.objects.exclude(
+            telaio__in=Attiva.objects.values_list('veicoloTelaio_id', flat=True)
+        ).order_by('marca', 'modello', 'telaio')
+        
+        # Converti in formato JSON per JavaScript
+        veicoli_list = []
+        for veicolo in veicoli_disponibili:
+            veicoli_list.append({
+                'telaio': veicolo.telaio,
+                'marca': veicolo.marca,
+                'modello': veicolo.modello,
+                'dataProd': veicolo.data_produzione.strftime('%Y-%m-%d') if veicolo.data_produzione else ''
+            })
+        
+        context['veicoli_disponibili'] = veicoli_disponibili
+        context['veicoli_disponibili_json'] = json.dumps(veicoli_list)
 
-                    return render(request, 'create.html', context)
+    # Gestisci altri tipi di tabella (veicolo, revisione) qui...
 
-        elif table == 'revisione':
-            try:
+        return render(request, 'create.html', context)
+
+    elif table == 'revisione':
+        try:
                 kwargs = {
                     'targaNumero_id': request.POST['numero_targa'],
                     'dataRev': request.POST['dataRev'],
@@ -364,11 +371,11 @@ def create(request):
                 Revisione.objects.create(**kwargs)
                 message = "Revisione aggiunta con successo."
                 success = True
-            except Exception as e:
+        except Exception as e:
                 message = f"Errore: {str(e)}"
 
         else:
-            return HttpResponseBadRequest(f"Tipo non supportato: {table}")
+                return HttpResponseBadRequest(f"Tipo non supportato: {table}")
 
     # Se table è ancora None, mostra errore
     if not table:

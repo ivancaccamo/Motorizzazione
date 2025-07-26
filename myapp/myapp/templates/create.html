@@ -44,52 +44,48 @@
 
     <!-- SOSTITUISCI la sezione esistente nel tuo template originale con questo codice -->
 {% elif table == 'targa' %}
-   
-      <div class="form-group">
+    <div class="form-group">
         <label>Numero Targa:</label>
-      <div class="targa-wrapper">
-        <!-- Genera 7 campi vuoti invece di usare i caratteri esistenti -->
-        {% for i in "0123456" %}
-          <div class="targa-box">
-            <input type="text"
-                  maxlength="1"
-                  class="targa-input"
-                  name="targa[]"
-                  value=""
-                  required>
-          </div>
-        {% endfor %}
-      </div>
+        <div class="targa-wrapper">
+            {% for i in "0123456" %}
+            <div class="targa-box">
+                <input type="text"
+                      maxlength="1"
+                      name="targa[]"
+                      value=""
+                      required>
+            </div>
+            {% endfor %}
+        </div>
     </div>
-      <div class="form-group">
-        <!-- Mantieni il valore originale nel campo hidden per riferimento -->
-        <input type="hidden" id="numero_hidden" name="numero" value="{{ targa.numero }}">
-      </div>
-      <div class="form-group">
+    
+    <div class="form-group">
         <label>Data Emissione:</label>
-      </div>
-      <div class="form-group">
-        <input type="date" name="dataEm" value="{{ targa.dataEm|date:'Y-m-d' }}" required>
-      </div>
-        <div class="form-group">
+        <input type="date" name="dataEm" required>
+    </div>
+    
+    <div class="form-group">
         <label for="veicolo_search">Cerca e Seleziona Veicolo:</label>
         <div class="vehicle-search-container">
             <input type="text" 
                    id="veicolo_search" 
-                   class="vehicle-search-input" 
                    placeholder="Digita telaio, marca o modello per cercare..."
                    autocomplete="off">
             <button type="button" 
-                    class="clear-selection" 
                     id="clearSelection" 
                     style="display: none;">&times;</button>
-            <div class="vehicle-dropdown" id="vehicleDropdown"></div>
+            <div id="vehicleDropdown"></div>
             <input type="hidden" id="veicolo_telaio" name="veicolo_telaio" required>
         </div>
         <small style="color: #666; font-size: 12px;">
             Vengono mostrati solo i veicoli senza targa attiva ({{ veicoli_disponibili|length }} veicoli disponibili)
         </small>
     </div>
+
+    <!-- Script per rendere disponibili i dati dei veicoli -->
+    <script>
+        const availableVehicles = {{ veicoli_disponibili_json|safe }};
+    </script>
 
         {% elif table == 'revisione' %}
             <div class="form-group">

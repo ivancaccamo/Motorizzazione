@@ -18,7 +18,6 @@ class Veicolo(models.Model):
 
 class Targa(models.Model):
     numero = models.CharField(max_length=10, primary_key=True)
-    telaio = models.ForeignKey(Veicolo, on_delete=models.CASCADE)
     dataEm = models.DateField(
         verbose_name="Data di emissione",
         null=True,
