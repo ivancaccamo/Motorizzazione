@@ -12,7 +12,6 @@
     display: flex        !important;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     padding: 0           !important;
   }
 
@@ -33,7 +32,7 @@
   }
 </style>
 
-  <div style="width:50%; min-height:73vh; padding:20px; background:#fff; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+  <div style="width:44%; min-height:73vh; padding:20px; background:#fff; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
       {% if message %}
         <div class="message {% if 'successo' in message %}success{% else %}error{% endif %}">
           {{ message }}

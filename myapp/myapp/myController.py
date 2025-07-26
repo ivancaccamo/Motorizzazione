@@ -13,6 +13,7 @@ from django.db import transaction
 from django.utils.html import escape
 import re
 from datetime import date
+from django.views.decorators.http import require_http_methods
 
 
 def modifica(request, table, id):
@@ -271,19 +272,23 @@ def gestioneRevisione(request):
 
 # ---------------------------- CREATE GENERICO ----------------------------
 
+@require_http_methods(["GET", "POST"])
 def create(request):
-    # Prova prima da POST (quando si invia il form), poi da GET (primo caricamento)
+    # Prendo il parametro “table” da POST o da GET
     table = request.POST.get('table') or request.GET.get('table')
+    if not table:
+        return HttpResponseBadRequest("Parametro 'table' mancante. Usa ?table=veicolo, ?table=targa o ?table=revisione.")
+    
     message = ''
     success = False
 
+    # ---- GESTIONE SUBMIT ----
     if request.method == 'POST':
-        
+        # 1) VEICOLO
         if table == 'veicolo':
             telaio = ''.join(request.POST.getlist('telaio[]')).upper()
             if len(telaio) != 17:
-                print("Telaio:", telaio)
-                message = f"Errore: Il numero di telaio deve contenere esattamente 17 caratteri.{telaio}"
+                message = f"Errore: Il numero di telaio deve contenere esattamente 17 caratteri. Ricevuto: {len(telaio)}"
             elif Veicolo.objects.filter(telaio=telaio).exists():
                 message = "Errore: Esiste già un veicolo con questo numero di telaio."
             else:
@@ -297,93 +302,81 @@ def create(request):
                     message = "Veicolo aggiunto con successo."
                     success = True
                 except Exception as e:
-                    message = f"Errore: {str(e)}"
+                    message = f"Errore durante la creazione del veicolo: {e}"
 
+        # 2) TARGA
         elif table == 'targa':
             targa_parts = request.POST.getlist('targa[]')
             numero = ''.join(targa_parts).upper()
-            
-            # Validazione formato targa italiana (esclude lettere I, O, Q, U)
-            if not re.match(r'^[A-HJ-NPR-Z]{2}[0-9]{3}[A-HJ-NPR-Z]{2}$', numero):
-                message = "❌ Errore: formato targa non valido. Deve essere: 2 lettere + 3 numeri + 2 lettere (escluse I, O, Q, U)."
-            elif len(numero) != 7:
-                message = f"Errore: La targa deve contenere esattamente 7 caratteri. Ricevuto: {len(numero)} caratteri."
+            # validazione: 2 lettere+3 numeri+2 lettere (escluse I,O,Q,U)
+            if len(numero) != 7:
+                message = f"Errore: La targa deve contenere 7 caratteri. Ricevuto: {len(numero)}"
+            elif not re.match(r'^[A-HJ-NPR-Z]{2}[0-9]{3}[A-HJ-NPR-Z]{2}$', numero):
+                message = "Errore: formato targa non valido."
             elif Targa.objects.filter(numero=numero).exists():
                 message = "Errore: Esiste già una targa con questo numero."
             else:
                 veicolo_telaio = request.POST.get('veicolo_telaio')
                 if not veicolo_telaio:
-                    message = "Errore: Devi selezionare un veicolo per la targa."
+                    message = "Errore: Devi selezionare un veicolo."
                 else:
                     try:
-                        # Verifica che il veicolo esista e non abbia già una targa attiva
-                        if not Veicolo.objects.filter(telaio=veicolo_telaio).exists():
-                            message = "Errore: Il veicolo selezionato non esiste."
-                        elif Attiva.objects.filter(veicoloTelaio=veicolo_telaio).exists():
-                            message = "Errore: Il veicolo selezionato ha già una targa attiva."
+                        veicolo = Veicolo.objects.get(telaio=veicolo_telaio)
+                        if Attiva.objects.filter(veicoloTelaio=veicolo).exists():
+                            message = "Errore: Il veicolo ha già una targa attiva."
                         else:
-                            # Crea la targa
-                            targa = Targa.objects.create(
-                                numero=numero, 
+                            t = Targa.objects.create(
+                                numero=numero,
                                 dataEm=request.POST['dataEm']
                             )
-                            
-                            # Recupera l'oggetto Veicolo
-                            veicolo_obj = Veicolo.objects.get(telaio=veicolo_telaio)
-                            
-                            # Crea la relazione attiva
                             Attiva.objects.create(
-                                targaNumero=targa,
-                                veicoloTelaio=veicolo_obj  # <- Corretto!
+                                targaNumero=t,
+                                veicoloTelaio=veicolo
                             )
                             message = "Targa aggiunta con successo."
                             success = True
+                    except Veicolo.DoesNotExist:
+                        message = "Errore: Veicolo non trovato."
                     except Exception as e:
-                        message = f"Errore durante la creazione della targa: {str(e)}"
+                        message = f"Errore durante la creazione della targa: {e}"
 
+        # 3) REVISIONE
         elif table == 'revisione':
-            try:
-                kwargs = {
-                    'targaNumero_id': request.POST['numero_targa'],
-                    'dataRev': request.POST['dataRev'],
-                    'esito': request.POST['esito']
-                }
-                if request.POST['esito'] == 'Non superata':
-                    kwargs['motivazione'] = request.POST.get('motivazione', '')
-                Revisione.objects.create(**kwargs)
-                message = "Revisione aggiunta con successo."
-                success = True
-            except Exception as e:
-                message = f"Errore: {str(e)}"
+            numero_targa = request.POST.get('numero_targa')
+            dataRev = request.POST.get('dataRev')
+            esito = request.POST.get('esito')
+            if not (numero_targa and dataRev and esito):
+                message = "Errore: tutti i campi sono obbligatori."
+            else:
+                try:
+                    kwargs = {
+                        'targaNumero_id': numero_targa,
+                        'dataRev': dataRev,
+                        'esito': esito
+                    }
+                    if esito == 'Non superata':
+                        kwargs['motivazione'] = request.POST.get('motivazione', '')
+                    Revisione.objects.create(**kwargs)
+                    message = "Revisione aggiunta con successo."
+                    success = True
+                except Exception as e:
+                    message = f"Errore durante la creazione della revisione: {e}"
 
         else:
             return HttpResponseBadRequest(f"Tipo non supportato: {table}")
 
-    # Se table è ancora None, mostra errore
-    if not table:
-        return HttpResponseBadRequest("Parametro 'table' mancante. Usa ?table=veicolo, ?table=targa, o ?table=revisione nell'URL.")
-
-    context = {'table': table, 'message': message, 'success': success}
+    # ---- PREPARO IL CONTESTO PER IL RENDER ----
+    context = {
+        'table': table,
+        'message': message,
+        'success': success,
+    }
 
     if table == 'targa':
-        # Ottieni veicoli disponibili (senza targa attiva)
-        veicoli_disponibili = Veicolo.objects.exclude(
+        # elenco veicoli senza targa attiva
+        context['veicoli_disponibili'] = Veicolo.objects.exclude(
             telaio__in=Attiva.objects.values_list('veicoloTelaio_id', flat=True)
         ).order_by('marca', 'modello', 'telaio')
-        
-        # Converti in formato JSON per JavaScript
-        veicoli_list = []
-        for veicolo in veicoli_disponibili:
-            veicoli_list.append({
-                'telaio': veicolo.telaio,
-                'marca': veicolo.marca,
-                'modello': veicolo.modello,
-                'dataProd': veicolo.data_produzione.strftime('%Y-%m-%d') if veicolo.data_produzione else ''
-            })
-        
-        context['veicoli_disponibili'] = veicoli_disponibili
-        context['veicoli_disponibili_json'] = json.dumps(veicoli_list)
-
     elif table == 'revisione':
         context['targhe'] = Targa.objects.all()
 
