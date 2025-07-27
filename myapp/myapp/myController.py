@@ -374,9 +374,21 @@ def create(request):
 
     if table == 'targa':
         # elenco veicoli senza targa attiva
-        context['veicoli_disponibili'] = Veicolo.objects.exclude(
+        veicoli_disponibili = Veicolo.objects.exclude(
             telaio__in=Attiva.objects.values_list('veicoloTelaio_id', flat=True)
         ).order_by('marca', 'modello', 'telaio')
+         # Converti in formato JSON per JavaScript
+        veicoli_list = []
+        for veicolo in veicoli_disponibili:
+            veicoli_list.append({
+                'telaio': veicolo.telaio,
+                'marca': veicolo.marca,
+                'modello': veicolo.modello,
+                'dataProd': veicolo.data_produzione.strftime('%Y-%m-%d') if veicolo.data_produzione else ''
+            })
+        
+        context['veicoli_disponibili'] = veicoli_disponibili
+        context['veicoli_disponibili_json'] = json.dumps(veicoli_list)
     elif table == 'revisione':
         context['targhe'] = Targa.objects.all()
 
