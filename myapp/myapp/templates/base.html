@@ -9,19 +9,19 @@
 </head>
 <body>
 
-    <!-- Header -->
+    <!-- Intestazione sito -->
     <header>
         <div class="header-content">
             <h1 class="site-title">Motorizzazione</h1>
             <img 
-               src="{% static 'logo/Progetto_senza_titolo__3_.png' %}" 
-               alt="Logo Motorizzazione" 
-               class="logo"
+                src="{% static 'logo/Progetto_senza_titolo__3_.png' %}" 
+                alt="Logo Motorizzazione" 
+                class="logo"
             >
         </div>
     </header>
 
-    <!-- Navigazione -->
+    <!-- Menu di navigazione principale -->
     <nav>
         <ul>
             <li><a href="{% url 'home' %}">Home</a></li>
@@ -36,20 +36,19 @@
             {% include 'includes/sidebar.html' %}
         {% endif %}
 
-        <div class="content" >
+        <div class="content">
             {% block content %}
-            <!-- Contenuto della pagina -->
+            <!-- Contenuto dinamico della pagina -->
             {% endblock %}
         </div>
     </div>
-  
 
-
-    <!-- Footer -->
+    <!-- Piè di pagina -->
     <footer>
         <p>&copy; {{ now|date:"Y" }} Sistema Gestionale Motorizzazione Civile</p>
     </footer>
 
+    <!-- Script esterni e inizializzazione -->
     <script src="{% static 'function.js' %}" defer></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {

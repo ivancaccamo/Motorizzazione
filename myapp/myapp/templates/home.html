@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% load static %}
+
 {% block content %}
 <div class="content" style="width: 100%; max-width: none; background: transparent; box-shadow: none;">
     <h2 style="text-align: center; margin: 15px 0 15px 0;" class="mb-3">
         Benvenuto nel Sistema di Gestione Veicoli
     </h2>
 
-    <!-- Statistiche principali -->
+    <!-- Sezione statistiche numeriche -->
     <div class="card-row d-flex justify-content-between mb-4">
         <div class="card-custom text-center">
             <i class="bi bi-truck icon display-4 mb-2 text-primary"></i>
@@ -26,7 +27,7 @@
         </div>
     </div>
 
-    <!-- Grafici -->
+    <!-- Sezione grafici dashboard -->
     <div class="chart-row d-flex justify-content-between mb-4">
         <div class="chart-container flex-fill mx-2">
             <h5 class="text-center">Veicoli</h5>
@@ -43,7 +44,10 @@
     </div>
 </div>
 
+<!-- Inclusione libreria Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Dati per i grafici -->
 <script>
     const chartData = {
         veicoliConAttiva: {{ veicoli_con_attiva }},
@@ -54,5 +58,7 @@
         revNonSuperate: {{ rev_non_superate }},
     };
 </script>
+
+<!-- Script personalizzato -->
 <script src="{% static 'function.js' %}"></script>
 {% endblock %}

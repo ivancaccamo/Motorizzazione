@@ -2,86 +2,97 @@
 {% load static %}
 
 {% block content %}
-    <div id="modal-restituisci" class="modal" style="display:none;">
-        <div class="modal-content">
-            <span class="close" onclick="chiudiDialogRestituisci()">&times;</span>
-            <h2>Conferma eliminazione veicolo</h2>
-            <p id="testo-restituisci"></p>
-            <form id="form-restituisci" method="POST" action="">
-                {% csrf_token %}
-                <input type="hidden" name="table" id="modal-table" value="">
-                <input type="hidden" name="id" id="modal-id" value="">
-                <button type="submit" class="btn-delete">Conferma</button>
-                <button type="button" class="btn-cancel" onclick="chiudiDialogRestituisci()">Annulla</button>
-            </form>
-        </div>
+
+<!-- Modale conferma eliminazione veicolo -->
+<div id="modal-restituisci" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" onclick="chiudiDialogRestituisci()">&times;</span>
+        <h2>Conferma eliminazione veicolo</h2>
+        <p id="testo-restituisci"></p>
+        <form id="form-restituisci" method="POST" action="">
+            {% csrf_token %}
+            <input type="hidden" name="table" id="modal-table" value="">
+            <input type="hidden" name="id" id="modal-id" value="">
+            <button type="submit" class="btn-delete">Conferma</button>
+            <button type="button" class="btn-cancel" onclick="chiudiDialogRestituisci()">Annulla</button>
+        </form>
     </div>
-    
-    
-        {% if messages %}
-            {% for message in messages %}
-                <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+</div>
 
-        <div class="header-bar">
-            <h2>Gestione Veicoli</h2>
-            <a href="{% url 'create'%}?table=veicolo" class="btn-add">Aggiungi Nuovo Veicolo</a>
+<!-- Messaggi di sistema (successo o errore) -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
         </div>
-       
-        {% if veicoli.exists %}
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>
-                                <a href="?sort=telaio&dir={% if sort == 'telaio' and dir == 'asc' %}desc{% else %}asc{% endif %}">
-                                    Telaio {% if sort == 'telaio' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
-                                </a>
-                            </th>
-                            <th>
-                                <a href="?sort=marca&dir={% if sort == 'marca' and dir == 'asc' %}desc{% else %}asc{% endif %}">
-                                    Marca {% if sort == 'marca' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
-                                </a>
-                            </th>
-                            <th>
-                                <a href="?sort=modello&dir={% if sort == 'modello' and dir == 'asc' %}desc{% else %}asc{% endif %}">
-                                    Modello {% if sort == 'modello' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
-                                </a>
-                            </th>
-                            <th>
-                                <a href="?sort=data_produzione&dir={% if sort == 'data_produzione' and dir == 'asc' %}desc{% else %}asc{% endif %}">
-                                    Data Produzione {% if sort == 'data_produzione' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
-                                </a>
-                            </th>
-                            <th>Azioni</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for v in veicoli %}
-                            <tr>
-                                <td>{{ v.telaio }}</td>
-                                <td>{{ v.marca }}</td>
-                                <td>{{ v.modello }}</td>
-                                <td>{{ v.data_produzione|date:"Y-m-d" }}</td>
-                                <td class="crud-options">
-                                    <a href="{% url 'dettaglio_record' 'veicolo' v.telaio %}" class="view">Visualizza</a>
-                                    <a href="{% url 'modifica' 'veicolo' v.telaio %}" class="edit">Modifica</a>
-                                    <a href="#" class="delete" onclick="apriDialogDelete('veicolo', '{{ v.telaio|escapejs }}'); return false;">Elimina</a>
+    {% endfor %}
+{% endif %}
 
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <p>Nessun veicolo trovato.</p>
-        {% endif %}
+<!-- Intestazione pagina con pulsante per creare un nuovo veicolo -->
+<div class="header-bar">
+    <h2>Gestione Veicoli</h2>
+    <a href="{% url 'create' %}?table=veicolo" class="btn-add">Aggiungi Nuovo Veicolo</a>
+</div>
+
+<!-- Tabella elenco veicoli -->
+{% if veicoli.exists %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <!-- Colonna ordinabile: telaio -->
+                    <th>
+                        <a href="?sort=telaio&dir={% if sort == 'telaio' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                            Telaio {% if sort == 'telaio' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
+                        </a>
+                    </th>
+                    <!-- Colonna ordinabile: marca -->
+                    <th>
+                        <a href="?sort=marca&dir={% if sort == 'marca' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                            Marca {% if sort == 'marca' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
+                        </a>
+                    </th>
+                    <!-- Colonna ordinabile: modello -->
+                    <th>
+                        <a href="?sort=modello&dir={% if sort == 'modello' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                            Modello {% if sort == 'modello' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
+                        </a>
+                    </th>
+                    <!-- Colonna ordinabile: data produzione -->
+                    <th>
+                        <a href="?sort=data_produzione&dir={% if sort == 'data_produzione' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                            Data Produzione {% if sort == 'data_produzione' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
+                        </a>
+                    </th>
+                    <!-- Colonna azioni -->
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in veicoli %}
+                    <tr>
+                        <td>{{ v.telaio }}</td>
+                        <td>{{ v.marca }}</td>
+                        <td>{{ v.modello }}</td>
+                        <td>{{ v.data_produzione|date:"Y-m-d" }}</td>
+                        <td class="crud-options">
+                            <a href="{% url 'dettaglio_record' 'veicolo' v.telaio %}" class="view">Visualizza</a>
+                            <a href="{% url 'modifica' 'veicolo' v.telaio %}" class="edit">Modifica</a>
+                            <a href="#" class="delete" onclick="apriDialogDelete('veicolo', '{{ v.telaio|escapejs }}'); return false;">Elimina</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+{% else %}
+    <!-- Nessun veicolo trovato -->
+    <p>Nessun veicolo trovato.</p>
+{% endif %}
 
+</div>
+
+<!-- Script gestione messaggi e modale -->
 <script src="{% static 'function.js' %}"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {

@@ -3,133 +3,160 @@
 
 {% block content  %}
   <h2>Modifica {{ table|title }}</h2>
+
   {% if messages %}
+    <!-- Visualizzazione messaggi di sistema -->
     {% for message in messages %}
       <div class="message {{ message.tags }}">{{ message }}</div>
     {% endfor %}
   {% endif %}
 
   {% if table == 'veicolo' %}
-    <form method="post">{% csrf_token %}
-    <div class="form-group">
-                <label>Numero Telaio:</label>
-                <div class="telaio-wrapper">
-                    {% for char in veicolo.telaio %}
-                    <div class="telaio-box">
-                        <input type="text"
-                            maxlength="1"
-                            class="telaio-input"
-                            name="telaio[]"
-                            value="{{ char }}"
-                            required
-                            oninput="moveFocus(this, {{ forloop.counter0 }}, 'telaio')"
-                            onkeydown="moveFocusOnBackspace(event, {{ forloop.counter0 }}, 'telaio')">
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
+    <!-- Form modifica veicolo -->
+    <form method="post">
+      {% csrf_token %}
+      
       <div class="form-group">
-      <input type="hidden" id="telaio_hidden" name="telaio" value="{{ veicolo.telaio }}">
+        <label>Numero Telaio:</label>
+        <div class="telaio-wrapper">
+          {% for char in veicolo.telaio %}
+            <div class="telaio-box">
+              <input type="text"
+                     maxlength="1"
+                     class="telaio-input"
+                     name="telaio[]"
+                     value="{{ char }}"
+                     required
+                     oninput="moveFocus(this, {{ forloop.counter0 }}, 'telaio')"
+                     onkeydown="moveFocusOnBackspace(event, {{ forloop.counter0 }}, 'telaio')">
+            </div>
+          {% endfor %}
+        </div>
       </div>
-        <div class="form-group">
-      <label>Marca:</label><input type="text" name="marca" value="{{ veicolo.marca }}" required>
-          </div>
-        <div class="form-group">
-      <label>Modello:</label><input type="text" name="modello" value="{{ veicolo.modello }}" required>
-          </div>
-        <div class="form-group">
-      <label>Data Produzione:</label><input type="date" name="dataProd" value="{{ veicolo.data_produzione|date:'Y-m-d' }}" required>
-          </div>
+
+      <!-- Telaio completo come campo nascosto -->
+      <div class="form-group">
+        <input type="hidden" id="telaio_hidden" name="telaio" value="{{ veicolo.telaio }}">
+      </div>
+
+      <div class="form-group">
+        <label>Marca:</label>
+        <input type="text" name="marca" value="{{ veicolo.marca }}" required>
+      </div>
+
+      <div class="form-group">
+        <label>Modello:</label>
+        <input type="text" name="modello" value="{{ veicolo.modello }}" required>
+      </div>
+
+      <div class="form-group">
+        <label>Data Produzione:</label>
+        <input type="date" name="dataProd" value="{{ veicolo.data_produzione|date:'Y-m-d' }}" required>
+      </div>
+
       <button type="submit" class="btn-primary">Salva</button>
       <a href="{% url 'gestione_veicoli' %}" class="btn-cancel">Annulla</a>
     </form>
 
   {% elif table == 'targa' %}
-   <form method="post">{% csrf_token %}
-    <div class="form-group">
-                <label>Numero Targa:</label>
-                <div class="targa-wrapper">
-                    {% for char in targa.numero %}
-                    <div class="targa-box">
-                        <input type="text"
-                            maxlength="1"
-                            class="targa-input"
-                            name="targa[]"
-                            value="{{ char }}"
-                            required
-                            oninput="moveFocus(this, {{ forloop.counter0 }}, 'targa')"
-                            onkeydown="moveFocusOnBackspace(event, {{ forloop.counter0 }}, 'targa')">
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
+    <!-- Form modifica targa -->
+    <form method="post">
+      {% csrf_token %}
+
       <div class="form-group">
-      <input type="hidden" id="numero_hidden" name="numero" value="{{ targa.numero }}">
+        <label>Numero Targa:</label>
+        <div class="targa-wrapper">
+          {% for char in targa.numero %}
+            <div class="targa-box">
+              <input type="text"
+                     maxlength="1"
+                     class="targa-input"
+                     name="targa[]"
+                     value="{{ char }}"
+                     required
+                     oninput="moveFocus(this, {{ forloop.counter0 }}, 'targa')"
+                     onkeydown="moveFocusOnBackspace(event, {{ forloop.counter0 }}, 'targa')">
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Numero targa completo come campo nascosto -->
+      <div class="form-group">
+        <input type="hidden" id="numero_hidden" name="numero" value="{{ targa.numero }}">
+      </div>
+
+      <div class="form-group">
+        <label>Data Emissione:</label>
       </div>
       <div class="form-group">
-      <label>Data Emissione:</label></div>
-      <div class="form-group">
-      <input type="date" name="dataEm" value="{{ targa.dataEm|date:'Y-m-d' }}" required></div>
+        <input type="date" name="dataEm" value="{{ targa.dataEm|date:'Y-m-d' }}" required>
+      </div>
+
       <button type="submit" class="btn-primary">Salva</button>
       <a href="{% url 'gestione_targhe' %}" class="btn-cancel">Annulla</a>
     </form>
 
-{% elif table == 'revisione' %}
-<form method="post">
-    {% csrf_token %}
-    
-    <div class="form-group">
+  {% elif table == 'revisione' %}
+    <!-- Form modifica revisione -->
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="form-group">
         <label for="numero">ID:</label>
         <input type="text" id="numero" name="numero" value="{{ revisione.numero }}" readonly>
-    </div>
-    
-    <div class="form-group">
+      </div>
+
+      <div class="form-group">
         <label for="targa">Targa:</label>
         <input type="text" id="targa" name="targa" value="{{ revisione.targaNumero }}" readonly>
-    </div>
-    
-    <div class="form-group">
+      </div>
+
+      <div class="form-group">
         <label for="dataRev">Data Revisione:</label>
         <input type="date" id="dataRev" name="dataRev" value="{{ revisione.dataRev|date:'Y-m-d' }}" required>
-    </div>
-    
-    <div class="form-group">
+      </div>
+
+      <div class="form-group">
         <label for="esito">Esito:</label>
         <select id="esito" name="esito" onchange="toggleMotivazione(this)">
-            <option value="superata" {% if revisione.esito == 'superata' %}selected{% endif %}>Superata</option>
-            <option value="Non superata" {% if revisione.esito == 'Non superata' %}selected{% endif %}>Non superata</option>
+          <option value="superata" {% if revisione.esito == 'superata' %}selected{% endif %}>Superata</option>
+          <option value="Non superata" {% if revisione.esito == 'Non superata' %}selected{% endif %}>Non superata</option>
         </select>
-    </div>
-    
-    <div id="motivazioneDiv" style="display: {% if revisione.esito == 'Non superata' %}block{% else %}none{% endif %};">
+      </div>
+
+      <!-- Campo motivazione visibile solo in caso di esito negativo -->
+      <div id="motivazioneDiv" style="display: {% if revisione.esito == 'Non superata' %}block{% else %}none{% endif %};">
         <div class="form-group">
-            <label for="motivazione">Motivazione:</label>
-            <textarea id="motivazione" name="motivazione"placeholder="Inserisci la motivazione per il mancato superamento...">{{ revisione.motivazione }}</textarea>
+          <label for="motivazione">Motivazione:</label>
+          <textarea id="motivazione" name="motivazione" placeholder="Inserisci la motivazione per il mancato superamento...">{{ revisione.motivazione }}</textarea>
         </div>
-    </div>
-    
-    <button type="submit" class="btn-primary">Salva</button>
-    <a href="{% url 'gestione_revisioni' %}" class="btn-cancel">Annulla</a>
-</form>
-{% endif %}
+      </div>
+
+      <button type="submit" class="btn-primary">Salva</button>
+      <a href="{% url 'gestione_revisioni' %}" class="btn-cancel">Annulla</a>
+    </form>
+  {% endif %}
 {% endblock %}
+
 {% block extra_js %}
+<!-- Gestione visibilità campo motivazione in base all'esito -->
 <script>
-function toggleMotivazione(sel) {
+  function toggleMotivazione(sel) {
     const div = document.getElementById('motivazioneDiv');
     if (sel.value === 'Non superata') {
-        div.style.display = 'block';
+      div.style.display = 'block';
     } else {
-        div.style.display = 'nessuna motivazione';
+      div.style.display = 'none';
     }
-}
+  }
 
-// Inizializza lo stato al caricamento della pagina
-document.addEventListener('DOMContentLoaded', function() {
+  // Imposta stato iniziale campo motivazione
+  document.addEventListener('DOMContentLoaded', function () {
     const esitoSelect = document.getElementById('esito');
     if (esitoSelect) {
-        toggleMotivazione(esitoSelect);
+      toggleMotivazione(esitoSelect);
     }
-});
+  });
 </script>
 {% endblock %}

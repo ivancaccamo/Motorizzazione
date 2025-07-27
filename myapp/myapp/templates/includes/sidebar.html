@@ -1,27 +1,18 @@
-{% comment %}
-Richiede la variabile 'pagina_attiva' settata dalla view con valori:
-- 'veicolo'
-- 'targa'
-- 'revisione'
-{% endcomment %}
-
 <div class="sidebar">
     <h3 class="sidebar-title">Filtro Ricerca</h3>
 
     <form method="get">
-        {% comment %}
-        Cambiato: usa current_filters invece di request.GET per verificare se ci sono filtri attivi
-        {% endcomment %}
         {% if current_filters %}
+            <!-- Mostra pulsante per rimuovere i filtri se attivi -->
             <div style="margin-bottom: 1em;">
                 <a href="?clear_filters=1" class="btn-cancel">Rimuovi Filtri</a>
             </div>
         {% endif %}
 
         {% if pagina_attiva == 'veicolo' %}
+            <!-- Filtri per pagina Veicolo -->
             <div class="form-group">
                 <label for="telaio">Telaio:</label>
-                {% comment %}Cambiato: usa current_filters.telaio invece di request.GET.telaio{% endcomment %}
                 <input type="text" id="telaio" name="telaio" value="{{ current_filters.telaio|default:'' }}">
             </div>
             <div class="form-group">
@@ -34,6 +25,7 @@ Richiede la variabile 'pagina_attiva' settata dalla view con valori:
             </div>
 
         {% elif pagina_attiva == 'targa' %}
+            <!-- Filtri per pagina Targa -->
             <div class="form-group">
                 <label for="numero">Numero Targa:</label>
                 <input type="text" id="numero" name="numero" value="{{ current_filters.numero|default:'' }}">
@@ -48,10 +40,12 @@ Richiede la variabile 'pagina_attiva' settata dalla view con valori:
                     <option value="">Tutti</option>
                     <option value="Attiva" {% if current_filters.statoTarga == "Attiva" %}selected{% endif %}>Attive</option>
                     <option value="Restituita" {% if current_filters.statoTarga == "Restituita" %}selected{% endif %}>Restituite</option>
+                    <option value="Non Assegnata" {% if current_filters.statoTarga == "Non Assegnata" %}selected{% endif %}>Non Assegnate</option>
                 </select>
             </div>
 
         {% elif pagina_attiva == 'revisione' %}
+            <!-- Filtri per pagina Revisione -->
             <div class="form-group">
                 <label for="id_revisione">ID Revisione:</label>
                 <input type="text" id="id_revisione" name="id_revisione" value="{{ current_filters.id_revisione|default:'' }}">
@@ -70,6 +64,7 @@ Richiede la variabile 'pagina_attiva' settata dalla view con valori:
             </div>
         {% endif %}
 
+        <!-- Pulsante invio form -->
         <button type="submit" class="btn-primary">Cerca</button>
     </form>
 </div>

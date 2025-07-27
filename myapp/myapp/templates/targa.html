@@ -3,6 +3,7 @@
 
 {% block content %}
 
+<!-- Modale conferma eliminazione targa -->
 <div id="modal-restituisci" class="modal" style="display:none;">
     <div class="modal-content">
         <span class="close" onclick="chiudiDialogRestituisci()">&times;</span>
@@ -18,82 +19,93 @@
     </div>
 </div>
 
-
-   
-        {% if messages %}
-            {% for message in messages %}
-                <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-                    {{ message }}                   
-                </div>
-            {% endfor %}
-        {% endif %}
-
-        <div class="header-bar">
-            <h2>Gestione Targhe</h2>
-            <a href="{% url 'create'%}?table=targa" class="btn-add">Aggiungi Nuova Targa</a>
+<!-- Visualizzazione messaggi di sistema -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}                   
         </div>
-        
-        {% if targhe.exists %}
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width:25%;">
-                                <a href="?sort=numero&dir={% if sort == 'numero' and dir == 'asc' %}desc{% else %}asc{% endif %}">
-                                    Numero
-                                    {% if sort == 'numero' %}
-                                        {% if dir == 'asc' %}↑{% else %}↓{% endif %}
-                                    {% else %}↑↓{% endif %}
-                                </a>
-                            </th>
-                            <th style="width:25%;">
-                                <a href="?sort=dataEm&dir={% if sort == 'dataEm' and dir == 'asc' %}desc{% else %}asc{% endif %}">
-                                    Data Emissione
-                                    {% if sort == 'dataEm' %}
-                                        {% if dir == 'asc' %}↑{% else %}↓{% endif %}
-                                    {% else %}↑↓{% endif %}
-                                </a>
-                            </th>
-                            <th style="width:25%;">Stato</th>
-                            <th style="width:25%;">Azioni</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for targa in targhe %}
-                            <tr>
-                                <td>{{ targa.numero }}</td>
-                                <td>{{ targa.dataEm|date:"Y-m-d" }}</td>
-                                <td>
-                                    {% if targa.ha_attiva %}
-                                        <span class="stato attiva">Attiva</span>
-                                    {% elif targa.ha_restituita %}
-                                        <span class="stato restituita">Restituita</span>
-                                    {% else %}
-                                        <span class="stato non-assegnata">Non Assegnata</span>
-                                    {% endif %}
-                                </td>
-                            <td class="crud-options">
-                                <a href="{% url 'dettaglio_record' 'targa' targa.numero %}" class="view">Visualizza</a>
-                                <a href="{% url 'modifica' 'targa' targa.numero %}" class="edit">Modifica</a>
-                                <a href="#" class="delete"
-                                onclick="apriDialogDelete('targa', '{{ targa.numero|escapejs }}'); return false;">
-                                Elimina
-                               </a>
-                            </td>
+    {% endfor %}
+{% endif %}
 
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <p>Nessuna targa trovata.</p>
-        {% endif %}
+<!-- Intestazione sezione e pulsante aggiunta -->
+<div class="header-bar">
+    <h2>Gestione Targhe</h2>
+    <a href="{% url 'create'%}?table=targa" class="btn-add">Aggiungi Nuova Targa</a>
+</div>
+
+<!-- Tabella targhe esistenti -->
+{% if targhe.exists %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <!-- Colonna ordinabile: Numero -->
+                    <th style="width:25%;">
+                        <a href="?sort=numero&dir={% if sort == 'numero' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                            Numero
+                            {% if sort == 'numero' %}
+                                {% if dir == 'asc' %}↑{% else %}↓{% endif %}
+                            {% else %}↑↓{% endif %}
+                        </a>
+                    </th>
+
+                    <!-- Colonna ordinabile: Data Emissione -->
+                    <th style="width:25%;">
+                        <a href="?sort=dataEm&dir={% if sort == 'dataEm' and dir == 'asc' %}desc{% else %}asc{% endif %}">
+                            Data Emissione
+                            {% if sort == 'dataEm' %}
+                                {% if dir == 'asc' %}↑{% else %}↓{% endif %}
+                            {% else %}↑↓{% endif %}
+                        </a>
+                    </th>
+
+                    <!-- Stato targa: attiva, restituita, non assegnata -->
+                    <th style="width:25%;">Stato</th>
+
+                    <!-- Azioni disponibili per ogni targa -->
+                    <th style="width:25%;">Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for targa in targhe %}
+                    <tr>
+                        <td>{{ targa.numero }}</td>
+                        <td>{{ targa.dataEm|date:"Y-m-d" }}</td>
+                        <td>
+                            {% if targa.ha_attiva %}
+                                <span class="stato attiva">Attiva</span>
+                            {% elif targa.ha_restituita %}
+                                <span class="stato restituita">Restituita</span>
+                            {% else %}
+                                <span class="stato non-assegnata">Non Assegnata</span>
+                            {% endif %}
+                        </td>
+                        <td class="crud-options">
+                            <a href="{% url 'dettaglio_record' 'targa' targa.numero %}" class="view">Visualizza</a>
+                            <a href="{% url 'modifica' 'targa' targa.numero %}" class="edit">Modifica</a>
+                            <a href="#"
+                               class="delete"
+                               onclick="apriDialogDelete('targa', '{{ targa.numero|escapejs }}'); return false;">
+                               Elimina
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+{% else %}
+    <!-- Nessuna targa presente -->
+    <p>Nessuna targa trovata.</p>
+{% endif %}
+
+<!-- Script JS -->
 <script src="{% static 'function.js' %}"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         hideMessageAfterDelay();
     });
 </script>
+
 {% endblock %}

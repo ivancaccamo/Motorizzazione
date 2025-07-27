@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-  <!-- Modale elimina revisione -->
+  <!-- Modale conferma eliminazione revisione -->
   <div id="modal-restituisci" class="modal" style="display:none;">
     <div class="modal-content">
       <span class="close" onclick="chiudiDialogRestituisci()">&times;</span>
@@ -18,35 +18,38 @@
     </div>
   </div>
 
-  <!-- Messaggi -->
+  <!-- Visualizzazione messaggi flash -->
   {% if messages %}
     {% for message in messages %}
       <div class="message {{ message.tags }}">{{ message }}</div>
     {% endfor %}
   {% endif %}
 
-  <!-- Header -->
+  <!-- Intestazione pagina -->
   <div class="header-bar">
     <h2>Gestione Revisioni</h2>
     <a href="{% url 'create'%}?table=revisione" class="btn-add">Aggiungi Nuova Revisione</a>
   </div>
 
-  <!-- Tabella revisioni -->
+  <!-- Tabella con elenco revisioni -->
   {% if revisioni.exists %}
     <div class="table-container">
       <table>
         <thead>
           <tr>
+            <!-- Colonna ordinabile: ID -->
             <th>
               <a href="?sort=numero&dir={% if sort == 'numero' and dir == 'asc' %}desc{% else %}asc{% endif %}">
                 ID {% if sort == 'numero' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
               </a>
             </th>
+            <!-- Colonna ordinabile: Targa -->
             <th>
               <a href="?sort=targaNumero__numero&dir={% if sort == 'targaNumero__numero' and dir == 'asc' %}desc{% else %}asc{% endif %}">
                 Targa {% if sort == 'targaNumero__numero' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
               </a>
             </th>
+            <!-- Colonna ordinabile: Data Revisione -->
             <th>
               <a href="?sort=dataRev&dir={% if sort == 'dataRev' and dir == 'asc' %}desc{% else %}asc{% endif %}">
                 Data Revisione {% if sort == 'dataRev' %}{% if dir == 'asc' %}↑{% else %}↓{% endif %}{% else %}↑↓{% endif %}
@@ -75,6 +78,7 @@
                   In attesa di esito
                 {% endif %}
               </td>
+              <!-- Azioni disponibili: visualizza, modifica, elimina -->
               <td class="crud-options">
                 <a href="{% url 'dettaglio_record' 'revisione' rev.numero %}" class="view">Visualizza</a>
                 <a href="{% url 'modifica' 'revisione' rev.numero %}" class="edit">Modifica</a>
@@ -90,10 +94,11 @@
       </table>
     </div>
   {% else %}
+    <!-- Nessuna revisione trovata -->
     <p>Nessuna revisione trovata.</p>
   {% endif %}
 
-  <!-- Script per modali e grafici -->
+  <!-- Script per gestione messaggi e modale -->
   <script src="{% static 'function.js' %}"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
