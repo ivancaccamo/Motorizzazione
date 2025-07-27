@@ -81,7 +81,7 @@ for _ in range(NUM_VEICOLI):
         data_em = (data_prod + timedelta(days=random.randint(30, 730))).date()
         t = Targa.objects.create(
             numero=targa,
-            telaio=veicolo,
+            
             dataEm=data_em
         )
         Attiva.objects.create(targaNumero=t, veicoloTelaio=veicolo)
@@ -95,7 +95,6 @@ for _ in range(NUM_VEICOLI):
         t2 = random_plate()
         Targa.objects.create(
             numero=t2,
-            telaio=veicolo,
             dataEm=d_em2
         )
         Restituita.objects.create(
