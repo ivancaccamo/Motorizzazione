@@ -19,25 +19,39 @@ from django.urls import path
 from django.conf.urls import include
 from . import myController
 urlpatterns = [
-path("revisione/", myController.gestioneRevisione,   name="gestione_revisioni"),
-path('admin/', admin.site.urls),
-path('create/', myController.create, name='create'),
-path('targhe/', myController.gestioneTarghe, name='gestione_targhe'),
-path('veicoli/', myController.gestioneVeicoli, name='gestione_veicoli'),
-path('revisioni/crea/', myController.create, name='crea_revisione'),
-path('', myController.home, name='home'),
-path('read/', myController.dettagli_record, name='dettaglio_record'),
-path('modifica/<str:table>/<str:id>/', myController.modifica, name='modifica'),
-path('dettagli/<str:table>/<str:id>/', myController.dettagli_record, name='dettaglio_record'),
-#path('targhe/<str:numero>/',myController.dettagli_record,name='dettaglio_record'),
-path(
-        'targhe/<str:numero>/modifica/',
-        myController.modifica,           # o chiami un wrapper se serve
-        name='modifica_targa'
-    ),
-#path('read/', myController.read, name='read'),
-#path('update/', myController.update, name='update')
- ]
+    # Gestione revisioni (elenco, filtri, elimina)
+    path("revisione/", myController.gestioneRevisione, name="gestione_revisioni"),
+
+    # Interfaccia di amministrazione Django
+    path('admin/', admin.site.urls),
+
+    # Creazione generica (veicolo, targa, revisione)
+    path('create/', myController.create, name='create'),
+
+    # Gestione targhe (elenco, filtri, elimina)
+    path('targhe/', myController.gestioneTarghe, name='gestione_targhe'),
+
+    # Gestione veicoli (elenco, filtri, elimina)
+    path('veicoli/', myController.gestioneVeicoli, name='gestione_veicoli'),
+
+    # Shortcut per creare una revisione (non obbligatorio se già incluso in /create/)
+    path('revisioni/crea/', myController.create, name='crea_revisione'),
+
+    # Dashboard iniziale
+    path('', myController.home, name='home'),
+
+    # Visualizzazione dettagli di un record (GET o POST restituzione)
+    path('read/', myController.dettagli_record, name='dettaglio_record'),  # ← può essere ridondante
+
+    # Modifica generica per entità (veicolo, targa, revisione)
+    path('modifica/<str:table>/<str:id>/', myController.modifica, name='modifica'),
+
+    # Visualizzazione dettagli tramite URL dinamico (preferibile)
+    path('dettagli/<str:table>/<str:id>/', myController.dettagli_record, name='dettaglio_record'),
+
+    # Modifica targa con URL semantico (usato se serve URL specifico)
+    path('targhe/<str:numero>/modifica/', myController.modifica, name='modifica_targa'),
+]
 
 
 

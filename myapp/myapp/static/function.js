@@ -1,27 +1,29 @@
-// js/function.js
-
-// Main: dopo che il DOM è pronto
+// Quando il DOM è pronto
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ----- 1) Chart.js Doughnut & Bar Chart (se chartData è definito) -----
+  // 1) Grafici (se disponibili dati)
   if (typeof chartData !== 'undefined') {
     const draw = (id, type, data, options = {}) => {
       const c = document.getElementById(id);
       if (!c) return;
       new Chart(c.getContext('2d'), { type, data, options });
     };
+
     draw('chartVeicoli', 'doughnut', {
       labels: ['Con targa attiva','Senza targa attiva'],
       datasets: [{ data: [chartData.veicoliConAttiva, chartData.veicoliSenza], backgroundColor: ['#357ABD','#6c757d'] }]
     });
+
     draw('chartTarghe', 'doughnut', {
       labels: ['Attive','Restituite'],
       datasets: [{ data: [chartData.attiveTarghe, chartData.restituiteTarghe], backgroundColor: ['#357ABD','#6c757d'] }]
     });
+
     draw('chartRevisione', 'doughnut', {
       labels: ['Superate','Non superate'],
       datasets: [{ data: [chartData.revSuperate, chartData.revNonSuperate], backgroundColor: ['#357ABD','#6c757d'] }]
     });
+
     draw('chartMarche', 'bar', {
       labels: chartData.marcheLabels,
       datasets: [{ label: 'Numero veicoli', data: chartData.marcheCounts, backgroundColor: '#357ABD' }]
@@ -30,13 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ----- 2) Gestione UNIFICATA input Targa -----
+  // 2) Gestione input targa (split in più campi)
   const setupTargaInputs = () => {
-    // Cerca prima gli input con classe .targa-input (modifica)
     let targaInputs = document.querySelectorAll('.targa-input');
     let numeroHidden = document.getElementById('numero_hidden');
-    
-    // Se non li trova, cerca per name="targa[]" (creazione)
+
     if (!targaInputs.length) {
       targaInputs = document.querySelectorAll('input[name="targa[]"]');
       numeroHidden = document.getElementById('numero_hidden') || document.querySelector('input[name="numero"]');
@@ -44,38 +44,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!targaInputs.length) return;
 
-    // Funzione per validare input targa
     const validateTargaInput = (input, index) => {
       let value = input.value.toUpperCase();
-      
-      // Posizioni 0,1,5,6 = lettere, posizioni 2,3,4 = numeri
       if ([0, 1, 5, 6].includes(index)) {
         value = value.replace(/[^ABCDEFGHJKLMNPRSTVWXYZ]/g, '');
       } else {
         value = value.replace(/[^0-9]/g, '');
       }
-      
       return value;
     };
 
-    // Funzione per aggiornare il campo hidden
     const updateHiddenField = () => {
       if (numeroHidden) {
         numeroHidden.value = Array.from(targaInputs).map(input => input.value).join('');
       }
     };
 
-    // Funzione per muovere il focus al prossimo campo
     const moveToNext = (currentIndex) => {
       if (currentIndex < targaInputs.length - 1) {
         targaInputs[currentIndex + 1].focus();
       }
     };
 
-    // Funzione per gestire il backspace
     const handleBackspace = (e, currentIndex) => {
       const currentInput = targaInputs[currentIndex];
-      
       if (e.key === 'Backspace' && currentInput.selectionStart === 0 && currentIndex > 0) {
         e.preventDefault();
         const prevInput = targaInputs[currentIndex - 1];
@@ -86,35 +78,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    // Applica i listener a tutti gli input
     targaInputs.forEach((input, index) => {
-      // Input event
       input.addEventListener('input', () => {
         input.value = validateTargaInput(input, index);
         updateHiddenField();
-        
         if (input.value.length === input.maxLength) {
           moveToNext(index);
         }
       });
 
-      // Keydown event per backspace
       input.addEventListener('keydown', (e) => {
         handleBackspace(e, index);
       });
     });
 
-    // Inizializza il campo hidden
     updateHiddenField();
   };
 
-  // ----- 3) Gestione UNIFICATA input Telaio -----
+  // 3) Gestione input telaio (split in più campi)
   const setupTelaioInputs = () => {
-    // Cerca prima gli input con classe .telaio-input (modifica)
     let telaioInputs = document.querySelectorAll('.telaio-input');
     let telaioHidden = document.getElementById('telaio_hidden');
-    
-    // Se non li trova, cerca per name="telaio[]" (creazione)
+
     if (!telaioInputs.length) {
       telaioInputs = document.querySelectorAll('input[name="telaio[]"]');
       telaioHidden = document.getElementById('telaio_hidden') || document.querySelector('input[name="telaio"]');
@@ -122,29 +107,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!telaioInputs.length) return;
 
-    // Funzione per validare input telaio
     const validateTelaioInput = (input) => {
       return input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
     };
 
-    // Funzione per aggiornare il campo hidden
     const updateHiddenField = () => {
       if (telaioHidden) {
         telaioHidden.value = Array.from(telaioInputs).map(input => input.value).join('');
       }
     };
 
-    // Funzione per muovere il focus al prossimo campo
     const moveToNext = (currentIndex) => {
       if (currentIndex < telaioInputs.length - 1) {
         telaioInputs[currentIndex + 1].focus();
       }
     };
 
-    // Funzione per gestire il backspace
     const handleBackspace = (e, currentIndex) => {
       const currentInput = telaioInputs[currentIndex];
-      
       if (e.key === 'Backspace' && currentInput.selectionStart === 0 && currentIndex > 0) {
         e.preventDefault();
         const prevInput = telaioInputs[currentIndex - 1];
@@ -155,38 +135,32 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    // Applica i listener a tutti gli input
     telaioInputs.forEach((input, index) => {
-      // Input event
       input.addEventListener('input', () => {
         input.value = validateTelaioInput(input);
         updateHiddenField();
-        
         if (input.value.length === input.maxLength) {
           moveToNext(index);
         }
       });
 
-      // Keydown event per backspace
       input.addEventListener('keydown', (e) => {
         handleBackspace(e, index);
       });
     });
 
-    // Inizializza il campo hidden
     updateHiddenField();
   };
 
-  // Inizializza gli input
   setupTargaInputs();
   setupTelaioInputs();
 
-  // ----- 4) Toggle motivazione revisione -----
+  // 4) Mostra/nasconde campo motivazione revisione
   const toggleMotivazione = () => {
     const sel = document.getElementById('esito');
     const divMot = document.getElementById('motivazioneDiv');
     const ta = document.getElementById('motivazione');
-    
+
     if (sel && divMot && ta) {
       const handleToggle = () => {
         if (sel.value === 'Non superata') {
@@ -195,19 +169,17 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           divMot.style.display = 'none';
           ta.required = false;
-          ta.value = ''; // Pulisce il campo quando non necessario
+          ta.value = '';
         }
       };
-      
       sel.addEventListener('change', handleToggle);
-      // Inizializza lo stato
       handleToggle();
     }
   };
-  
+
   toggleMotivazione();
 
-  // ----- 5) Ricerca e selezione veicoli (form targa) -----
+  // 5) Ricerca e selezione veicolo (creazione targa)
   if (typeof availableVehicles !== 'undefined') {
     const inpSearch = document.getElementById('veicolo_search'),
           dd = document.getElementById('vehicleDropdown'),
@@ -216,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (inpSearch && dd && hid && clr) {
       let hl = -1;
-      
+
       const render = list => {
         dd.innerHTML = '';
         if (!list.length) {
@@ -239,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         dd.style.display = 'block';
       };
-      
+
       inpSearch.addEventListener('input', e => {
         clr.style.display = 'none';
         const q = e.target.value.trim().toLowerCase();
@@ -250,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
           v.modello.toLowerCase().includes(q)
         ));
       });
-      
+
       inpSearch.addEventListener('keydown', e => {
         const opts = dd.querySelectorAll('.vehicle-option');
         if (!opts.length) return;
@@ -263,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         opts.forEach((o, i) => o.classList.toggle('highlighted', i === hl));
         if (hl >= 0) opts[hl].scrollIntoView({ block: 'nearest' });
       });
-      
+
       clr.addEventListener('click', () => {
         inpSearch.value = '';
         hid.value = '';
@@ -272,17 +244,17 @@ document.addEventListener('DOMContentLoaded', () => {
         dd.style.display = 'none';
         hl = -1;
       });
-      
+
       document.addEventListener('click', e => {
         if (!inpSearch.contains(e.target) && !dd.contains(e.target)) {
-          dd.style.display = 'none'; 
+          dd.style.display = 'none';
           hl = -1;
         }
       });
     }
   }
 
-  // ----- 6) Modali restituisci/elimina -----
+  // 6) Modali di conferma (restituzione / eliminazione)
   window.apriDialogRestituisci = (num, de) => {
     const modalTargaNumero = document.getElementById('modal-targa-numero');
     const testoRestituisci = document.getElementById('testo-restituisci');
@@ -294,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modalRestituisci.style.display = 'flex';
     }
   };
-  
+
   window.chiudiDialogRestituisci = () => {
     const modalRestituisci = document.getElementById('modal-restituisci');
     if (modalRestituisci) {
@@ -317,33 +289,33 @@ document.addEventListener('DOMContentLoaded', () => {
       modalRestituisci.style.display = 'flex';
     }
   };
-  
+
   window.chiudiDialogDelete = () => {
     const modalRestituisci = document.getElementById('modal-restituisci');
     if (modalRestituisci) {
       modalRestituisci.style.display = 'none';
     }
   };
-  
+
   window.confermaDelete = () => {
     const btn = document.getElementById('confirmDelete');
     if (!btn) return;
-    
+
     btn.disabled = true;
     btn.textContent = 'Eliminando...';
     const fd = new FormData();
     fd.append('table', curr.table);
     fd.append('id', curr.id);
-    
+
     fetch('../operations/delete_handler.php', { method: 'POST', body: fd })
       .then(r => r.json())
-      .then(d => { 
-        window.chiudiDialogDelete(); 
-        alert(d.message); 
-        location.reload(); 
+      .then(d => {
+        window.chiudiDialogDelete();
+        alert(d.message);
+        location.reload();
       })
-      .catch(e => { 
-        window.chiudiDialogDelete(); 
+      .catch(e => {
+        window.chiudiDialogDelete();
         alert('Errore: ' + e.message);
         btn.disabled = false;
         btn.textContent = 'Conferma';
@@ -351,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 });
 
-// Funzione per nascondere messaggi dopo un delay
+// Nasconde i messaggi flash dopo un tempo
 function hideMessageAfterDelay(delay = 4000) {
   const message = document.querySelector('.message');
   if (message) {
@@ -362,15 +334,3 @@ function hideMessageAfterDelay(delay = 4000) {
     }, delay);
   }
 }
-
-// Funzioni legacy per compatibilità (rimosse perché ora unificate)
-// Queste non servono più ma le lascio commentate per riferimento
-/*
-window.moveFocus = (el, idx, field) => {
-  // Ora gestito dalla funzione unificata
-};
-
-window.moveFocusOnBackspace = (e, idx, field) => {
-  // Ora gestito dalla funzione unificata
-};
-*/
