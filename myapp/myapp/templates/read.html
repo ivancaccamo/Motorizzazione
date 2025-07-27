@@ -232,7 +232,7 @@
               <dl>
                 <dt>ID</dt><dd>{{ data.numero }}</dd>
                 <dt>Targa</dt><dd>{{ data.targaNumero.numero }}</dd>
-                <dt>Data Revisione</dt><dd>{{ data.dataRev }}</dd>
+                <dt>Data Revisione</dt><dd>{{ data.dataRev|date:"Y-m-d" }}</dd>
                 <dt>Esito</dt><dd>{{ data.esito }}</dd>
                 {% if data.esito == 'Non superata' %}
                   <dt>Motivazione</dt><dd>{{ data.motivazione }}</dd>
