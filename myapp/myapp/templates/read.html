@@ -52,7 +52,7 @@
             <dt>Telaio</dt><dd>{{ data.telaio }}</dd>
             <dt>Marca</dt><dd>{{ data.marca }}</dd>
             <dt>Modello</dt><dd>{{ data.modello }}</dd>
-            <dt>Data Produzione</dt><dd>{{ data.data_produzione|date:"Y-m-d" }}</dd>
+            <dt>Data Produzione</dt><dd>{{ data.data_produzione|date:"d-m-Y" }}</dd>
           </dl>
         </div>
       </div>
@@ -70,7 +70,7 @@
                 {% for t in related.attive %}
                   <tr>
                     <td>{{ t.targaNumero.numero }}</td>
-                    <td>{{ t.targaNumero.dataEm }}</td>
+                    <td>{{ t.targaNumero.dataEm |date:"d-m-Y" }}</td>
                     <td class="crud-options">
                       <a href="{% url 'dettaglio_record' 'targa' t.targaNumero.numero %}" class="view">Visualizza</a>
                       <form method="post" style="display:inline; margin-top: 0px;">
@@ -99,8 +99,8 @@
                 {% for t in related.restituite %}
                   <tr>
                     <td>{{ t.targaNumero.numero }}</td>
-                    <td>{{ t.targaNumero.dataEm|date:"Y-m-d" }}</td>
-                    <td>{{ t.data_restituzione|date:"Y-m-d" }}</td>
+                    <td>{{ t.targaNumero.dataEm|date:"d-m-Y" }}</td>
+                    <td>{{ t.data_restituzione|date:"d-m-Y" }}</td>
                     <td class="crud-options">
                       <a href="{% url 'dettaglio_record' 'targa' t.targaNumero.numero %}" class="view">Visualizza</a>
                     </td>
@@ -131,7 +131,7 @@
         <div class="card-custom mb-4" style="width:350px; margin:0 auto; padding:1.5rem;">
           <dl>
             <dt>Numero</dt><dd>{{ data.numero }}</dd>
-            <dt>Data Emissione</dt><dd>{{ data.dataEm|date:"Y-m-d" }}</dd>
+            <dt>Data Emissione</dt><dd>{{ data.dataEm|date:"d-m-Y" }}</dd>
             <dt>Stato</dt><dd>{{ related.stato }}</dd>
           </dl>
         </div>
@@ -162,7 +162,7 @@
           <h3>Targa restituita</h3>
           <div class="table-container mb-4">
             <div class="read-page">
-              <p>Data Restituzione: {{ related.restituzione.data_restituzione|date:"Y-m-d" }}</p>
+              <p>Data Restituzione: {{ related.restituzione.data_restituzione|date:"d-m-Y" }}</p>
             </div>
           </div>
         {% endif %}
@@ -178,7 +178,7 @@
                 {% for rev in related.revisioni %}
                   <tr>
                     <td>{{ rev.numero }}</td>
-                    <td>{{ rev.dataRev|date:"Y-m-d" }}</td>
+                    <td>{{ rev.dataRev|date:"d-m-Y" }}</td>
                     <td>{{ rev.esito }}</td>
                     <td>{{ rev.motivazione|default:"—" }}</td>
                     <td class="crud-options">
@@ -213,7 +213,7 @@
           <dl>
             <dt>ID</dt><dd>{{ data.numero }}</dd>
             <dt>Targa</dt><dd>{{ data.targaNumero.numero }}</dd>
-            <dt>Data Revisione</dt><dd>{{ data.dataRev|date:"Y-m-d" }}</dd>
+            <dt>Data Revisione</dt><dd>{{ data.dataRev|date:"d-m-Y" }}</dd>
             <dt>Esito</dt><dd>{{ data.esito }}</dd>
             {% if data.esito == 'Non superata' %}
               <dt>Motivazione</dt><dd>{{ data.motivazione }}</dd>
